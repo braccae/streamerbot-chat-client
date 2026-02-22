@@ -3,5 +3,5 @@ compatibility_date = "2024-02-22"
 pages_build_output_dir = "." # Hosting the root directory as the static site
 
 [vars]
-TIKTOK_BACKEND = "ws://localhost:8081"
+TIKTOK_BACKEND = "wss://ultimateshadestiktokrelay.pants.place"
 
