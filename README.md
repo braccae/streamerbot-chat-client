@@ -31,7 +31,9 @@ To deploy the frontend to Cloudflare Pages:
 npm run pages:deploy
 ```
 
-**Important**: In your Cloudflare Pages dashboard, set the `TIKTOK_BACKEND` environment variable to point to your hosted relay server (e.g., `wss://ultimateshadestiktokbackend.pants.place`).
+**Important**: In your Cloudflare Pages dashboard, add `TIKTOK_BACKEND` as a **Secret** (or Environment Variable) pointing to your hosted relay server (e.g., `wss://ultimateshadestiktokbackend.pants.place`). 
+
+For local development, `TIKTOK_BACKEND` can be set in the `.dev.vars` file.
 
 ## 2. Setup the TikTok Relay Server (Backend)
 
