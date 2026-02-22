@@ -1,0 +1,14 @@
+node_modules
+npm-debug.log
+.git
+.agents
+.gemini
+*.html
+*.css
+script.js
+Dockerfile
+.dockerignore
+README.md
+task.md
+implementation_plan.md
+walkthrough.md

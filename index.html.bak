@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <script src="https://unpkg.com/@streamerbot/client/dist/streamerbot-client.js"></script>
+        <title>Streamer.bot Twitch Chat Log</title>
+        <style>
+            body {
+                font-family: "Pixelify Sans", sans-serif;
+                font-optical-sizing: auto;
+                font-weight: 400;
+                font-style: normal;
+                margin: 20px;
+                background-color: #f0f0f0;
+                color: #333;
+            }
+            h1 {
+                color: #333;
+            }
+            #chatLog {
+                width: 90%;
+                max-width: 700px;
+                height: 450px;
+                border: 1px solid #ccc;
+                padding: 10px;
+                overflow-y: scroll;
+                background-color: #fff;
+                border-radius: 8px;
+                margin-top: 20px;
+                box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            }
+            .chatMessage {
+                margin-bottom: 8px;
+                line-height: 1.4;
+                word-wrap: break-word; /* Ensures long words wrap */
+            }
+            .username {
+                font-weight: bold;
+                color: #6a0dad; /* A distinct purple for Twitch */
+                margin-right: 5px;
+            }
+            .systemMessage {
+                font-style: italic;
+                color: #555;
+                margin-bottom: 5px;
+            }
+            .systemMessage.green {
+                color: green;
+            }
+            .systemMessage.blue {
+                color: blue;
+            }
+            .systemMessage.red {
+                color: red;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="chatLog"></div>
+
+        <script>
+            type = "text/javascript";
+            src =
+                "https://unpkg.com/@streamerbot/client/dist/streamerbot-client.js";
+        </script>
+        <script>
+            const chatLog = document.getElementById("chatLog");
+
+            function addLogMessage(message, className = "systemMessage") {
+                const messageElement = document.createElement("div");
+                messageElement.classList.add(...className.split(" "));
+                messageElement.innerHTML = message;
+                chatLog.appendChild(messageElement);
+                chatLog.scrollTop = chatLog.scrollHeight; // Scroll to the bottom
+            }
+
+            const client = new StreamerbotClient({
+                host: "192.168.122.3",
+                port: 8080,
+                endpoint: "/",
+                onConnect: () => {
+                    addLogMessage(
+                        "Connected to Streamer.bot WebSocket.",
+                        "systemMessage green",
+                    );
+                },
+                onDisconnect: () => {
+                    addLogMessage(
+                        "WebSocket disconnected. Attempting to reconnect...",
+                        "systemMessage red",
+                    );
+                },
+                onError: (error) => {
+                    console.error("WebSocket error:", error);
+                    addLogMessage(
+                        "WebSocket error occurred. Check browser console for details.",
+                        "systemMessage red",
+                    );
+                },
+            });
+
+            client.on("Twitch.ChatMessage", (data) => {
+                console.log("Twitch ChatMessage data:", data); // Log the data
+                const messageData = data.data.message ?? {};
+                const userName =
+                    messageData.displayName ?? messageData.name ?? "";
+                const chatMessage = data.data.parts
+                    .filter((part) => part.type === "text")
+                    .map((part) => part.text)
+                    .join("");
+                console.log("data.data.text:", data.data.text);
+                console.log("data.data.parts:", data.data.parts);
+
+                const messageElement = document.createElement("div");
+                messageElement.classList.add("chatMessage");
+                messageElement.innerHTML = `<span class="username">[Twitch] ${userName}:</span> ${chatMessage}`;
+                chatLog.appendChild(messageElement);
+
+                // Scroll to the bottom
+                chatLog.scrollTop = chatLog.scrollHeight;
+            });
+
+            client.on("YouTube.Message", (data) => {
+                console.log("YouTube Message data:", data); // Log the data
+                const userName = data.user;
+                const chatMessage = data.message.message;
+
+                const messageElement = document.createElement("div");
+                messageElement.classList.add("chatMessage");
+                messageElement.innerHTML = `<span class="username">[YouTube] ${userName}:</span> ${chatMessage}`;
+                chatLog.appendChild(messageElement);
+
+                // Scroll to the bottom
+                chatLog.scrollTop = chatLog.scrollHeight;
+            });
+
+            addLogMessage(
+                "Attempting to connect to Streamer.bot WebSocket...",
+                "systemMessage",
+            );
+        </script>
+    </body>
+</html>

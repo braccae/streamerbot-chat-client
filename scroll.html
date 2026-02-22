@@ -1,0 +1,514 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Retro Pixel Scroll Background</title>
+        <style>
+            body {
+                margin: 0;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                min-height: 100vh;
+                background-color: #333; /* Dark background for contrast */
+                font-family: 'Press Start 2P', cursive, sans-serif;
+                color: white;
+                box-sizing: border-box;
+                overflow: hidden; /* Prevent body scrollbars if content overflows */
+            }
+
+            /* Import a retro pixel font (optional, for demo purposes) */
+            @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+            .chat-container {
+                position: relative;
+                /* Define a responsive size for the container based on viewport dimensions.
+                   Using vmin ensures it fits on both tall/narrow and wide/short screens.
+                   The SVG's aspect ratio is 600:800 (3:4).
+                   We set the container to this aspect ratio to avoid clipping the SVG's scroll rolls. */
+                width: 70vmin; /* Example: 70% of the smaller viewport dimension (min(vw, vh)) */
+                height: calc(70vmin * (800 / 600)); /* Calculate height to maintain 3:4 aspect ratio */
+                max-width: 900px; /* Optional: prevent it from getting too huge on very large screens */
+                max-height: 1200px; /* Optional: prevent it from getting too huge on very large screens */
+
+                box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+                overflow: hidden; /* Crucial for containing the SVG and chat content */
+                background-color: transparent; /* Allows any body background to show through, though the SVG will cover it */
+            }
+
+            .scroll-background {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%; /* Make SVG fill its parent container (chat-container) */
+                height: 100%; /* Make SVG fill its parent container (chat-container) */
+                preserveAspectRatio="xMidYMid slice";
+                z-index: 0; /* Positions the SVG behind the chat content */
+            }
+
+            /* NEW: This div precisely positions and clips the text content */
+            .chat-text-area {
+                position: absolute;
+                /* Calculate position and dimensions based on SVG's viewBox and paper area */
+                top: calc(100 / 800 * 100%);   /* 100 units from top out of 800 total height */
+                left: calc(100 / 600 * 100%);  /* 100 units from left out of 600 total width */
+                width: calc(400 / 600 * 100%); /* 400 units wide out of 600 total width */
+                height: calc(600 / 800 * 100%); /* 600 units tall out of 800 total height */
+
+                overflow-y: auto; /* Make this specific area scrollable */
+                box-sizing: border-box; /* Include any padding in the width/height */
+                z-index: 1; /* Ensure it's above the SVG */
+                /* Add some internal padding to space the text from the paper's edge */
+                padding: 1em; /* Adjust this value as needed for visual comfort */
+            }
+
+            /* This div styles the text elements themselves and ensures no external margins */
+            .chat-content {
+                color: #333; /* Dark text for readability on light scroll paper */
+                text-shadow: 1px 1px 0 #fff; /* A subtle text shadow for pixel font clarity */
+                line-height: 1.5;
+                /* Make font size responsive, but guarantee a minimum readable size */
+                font-size: max(12px, calc(0.8vmin + 8px)); /* Adjust 0.8vmin and 8px for desired scaling */
+                margin: 0; /* Important: remove any default outer margins on this wrapper */
+            }
+
+            /* Aggressively reset default margins on direct text elements */
+            .chat-content h2,
+            .chat-content p {
+                margin: 0; /* Remove all default margins to prevent overflow */
+                padding: 0; /* Remove any default padding */
+            }
+
+            .chat-content h2 {
+                font-size: 1.2em; /* Relative to chat-content's font-size */
+                text-align: center;
+                margin-bottom: 1em; /* Add specific bottom margin for h2 */
+                color: #5C4D39; /* Darker title color */
+            }
+
+            /* Apply margin-bottom to all paragraphs EXCEPT the very last one */
+            .chat-content p:not(:last-child) {
+                margin-bottom: 0.8em; /* Relative to chat-content's font-size */
+            }
+
+            /* Basic pixel art colors for the scroll, using CSS variables for easy modification */
+            .scroll-svg {
+                --scroll-paper-light: #F0E6BD; /* Light parchment color for the main paper */
+                --scroll-paper-dark: #D2C498; /* Darker parchment/shadow for paper depth */
+                --scroll-edge: #B4A271;     /* Darker base color for rolls and edges */
+                --scroll-outline: #7A694B;  /* Dark brown outline for pixel effect */
+                --shadow-dark: #5C4D39;     /* Deepest shadow/depth color */
+            }
+        </style>
+    </head>
+    <body>
+        <div class="chat-container">
+            <!-- The SVG element for the scroll background -->
+            <svg class="scroll-background scroll-svg" viewBox="0 0 600 800">
+                <!--
+                Retro pixel art unfurled scroll.
+                Using a conceptual grid step of 4 units. All coordinates and dimensions are multiples of 4.
+                This creates the distinct, blocky "pixel" look typical of pixel art.
+            -->
+
+                <!-- Scroll Paper Main Area -->
+                <rect
+                    x="100"
+                    y="100"
+                    width="400"
+                    height="600"
+                    fill="var(--scroll-paper-light)"
+                />
+
+                <!-- Paper Edges (simulating slight curl/depth and pixelation) -->
+                <polygon
+                    points="96,100 100,100 100,700 96,700"
+                    fill="var(--scroll-paper-dark)"
+                />
+                <polygon
+                    points="92,100 96,100 96,700 92,700"
+                    fill="var(--scroll-edge)"
+                />
+                <polygon
+                    points="500,100 504,100 504,700 500,700"
+                    fill="var(--scroll-paper-dark)"
+                />
+                <polygon
+                    points="504,100 508,100 508,700 504,700"
+                    fill="var(--scroll-edge)"
+                />
+
+                <!-- Top Roll (constructed from multiple rectangles to simulate a rolled paper look) -->
+                <rect
+                    x="80"
+                    y="60"
+                    width="440"
+                    height="40"
+                    fill="var(--scroll-edge)"
+                />
+                <rect
+                    x="96"
+                    y="68"
+                    width="408"
+                    height="24"
+                    fill="var(--scroll-paper-dark)"
+                />
+                <rect
+                    x="100"
+                    y="64"
+                    width="400"
+                    height="8"
+                    fill="var(--scroll-paper-light)"
+                />
+                <rect
+                    x="92"
+                    y="96"
+                    width="416"
+                    height="8"
+                    fill="var(--shadow-dark)"
+                />
+                <rect
+                    x="76"
+                    y="56"
+                    width="448"
+                    height="4"
+                    fill="var(--scroll-outline)"
+                />
+                <!-- Top edge -->
+                <rect
+                    x="76"
+                    y="56"
+                    width="4"
+                    height="48"
+                    fill="var(--scroll-outline)"
+                />
+                <!-- Left edge -->
+                <rect
+                    x="520"
+                    y="56"
+                    width="4"
+                    height="48"
+                    fill="var(--scroll-outline)"
+                />
+                <!-- Right edge -->
+                <rect
+                    x="76"
+                    y="100"
+                    width="24"
+                    height="4"
+                    fill="var(--scroll-outline)"
+                />
+                <!-- Bottom-left connection -->
+                <rect
+                    x="500"
+                    y="100"
+                    width="24"
+                    height="4"
+                    fill="var(--scroll-outline)"
+                />
+                <!-- Bottom-right connection -->
+                <rect
+                    x="96"
+                    y="60"
+                    width="4"
+                    height="8"
+                    fill="var(--scroll-outline)"
+                />
+                <rect
+                    x="500"
+                    y="60"
+                    width="4"
+                    height="8"
+                    fill="var(--scroll-outline)"
+                />
+                <rect
+                    x="96"
+                    y="92"
+                    width="4"
+                    height="8"
+                    fill="var(--scroll-outline)"
+                />
+                <rect
+                    x="500"
+                    y="92"
+                    width="4"
+                    height="8"
+                    fill="var(--scroll-outline)"
+                />
+
+                <!-- Bottom Roll (mirrored construction of the top roll) -->
+                <rect
+                    x="80"
+                    y="700"
+                    width="440"
+                    height="40"
+                    fill="var(--scroll-edge)"
+                />
+                <rect
+                    x="96"
+                    y="708"
+                    width="408"
+                    height="24"
+                    fill="var(--scroll-paper-dark)"
+                />
+                <rect
+                    x="100"
+                    y="704"
+                    width="400"
+                    height="8"
+                    fill="var(--scroll-paper-light)"
+                />
+                <rect
+                    x="92"
+                    y="736"
+                    width="416"
+                    height="8"
+                    fill="var(--shadow-dark)"
+                />
+                <rect
+                    x="76"
+                    y="736"
+                    width="448"
+                    height="4"
+                    fill="var(--scroll-outline)"
+                />
+                <!-- Bottom edge -->
+                <rect
+                    x="76"
+                    y="696"
+                    width="4"
+                    height="48"
+                    fill="var(--scroll-outline)"
+                />
+                <!-- Left edge -->
+                <rect
+                    x="520"
+                    y="696"
+                    width="4"
+                    height="48"
+                    fill="var(--scroll-outline)"
+                />
+                <!-- Right edge -->
+                <rect
+                    x="76"
+                    y="696"
+                    width="24"
+                    height="4"
+                    fill="var(--scroll-outline)"
+                />
+                <!-- Top-left connection -->
+                <rect
+                    x="500"
+                    y="696"
+                    width="24"
+                    height="4"
+                    fill="var(--scroll-outline)"
+                />
+                <!-- Top-right connection -->
+                <rect
+                    x="96"
+                    y="700"
+                    width="4"
+                    height="8"
+                    fill="var(--scroll-outline)"
+                />
+                <rect
+                    x="500"
+                    y="700"
+                    width="4"
+                    height="8"
+                    fill="var(--scroll-outline)"
+                />
+                <rect
+                    x="96"
+                    y="732"
+                    width="4"
+                    height="8"
+                    fill="var(--scroll-outline)"
+                />
+                <rect
+                    x="500"
+                    y="732"
+                    width="4"
+                    height="8"
+                    fill="var(--scroll-outline)"
+                />
+
+                <!-- Overall Outline for the main paper area -->
+                <rect
+                    x="96"
+                    y="96"
+                    width="408"
+                    height="4"
+                    fill="var(--scroll-outline)"
+                />
+                <!-- Top border -->
+                <rect
+                    x="96"
+                    y="700"
+                    width="408"
+                    height="4"
+                    fill="var(--scroll-outline)"
+                />
+                <!-- Bottom border -->
+                <rect
+                    x="96"
+                    y="100"
+                    width="4"
+                    height="600"
+                    fill="var(--scroll-outline)"
+                />
+                <!-- Left border -->
+                <rect
+                    x="500"
+                    y="100"
+                    width="4"
+                    height="600"
+                    fill="var(--scroll-outline)"
+                />
+                <!-- Right border -->
+
+                <!-- Optional: Small decorative elements / "pins" or weights on the scroll ends -->
+                <rect
+                    x="60"
+                    y="60"
+                    width="16"
+                    height="16"
+                    fill="var(--scroll-outline)"
+                />
+                <rect
+                    x="64"
+                    y="64"
+                    width="8"
+                    height="8"
+                    fill="var(--shadow-dark)"
+                />
+                <rect
+                    x="524"
+                    y="60"
+                    width="16"
+                    height="16"
+                    fill="var(--scroll-outline)"
+                />
+                <rect
+                    x="528"
+                    y="64"
+                    width="8"
+                    height="8"
+                    fill="var(--shadow-dark)"
+                />
+                <rect
+                    x="60"
+                    y="724"
+                    width="16"
+                    height="16"
+                    fill="var(--scroll-outline)"
+                />
+                <rect
+                    x="64"
+                    y="728"
+                    width="8"
+                    height="8"
+                    fill="var(--shadow-dark)"
+                />
+                <rect
+                    x="524"
+                    y="724"
+                    width="16"
+                    height="16"
+                    fill="var(--scroll-outline)"
+                />
+                <rect
+                    x="528"
+                    y="728"
+                    width="8"
+                    height="8"
+                    fill="var(--shadow-dark)"
+                />
+            </svg>
+
+            <!-- The actual chat log content will go here, precisely positioned -->
+            <div class="chat-text-area">
+                <div class="chat-content">
+                    <h2>Chat Log</h2>
+                    <p>
+                        <strong>User1:</strong> Hello, everyone! Welcome to the
+                        retro chatroom.
+                    </p>
+                    <p>
+                        <strong>User2:</strong> Hey! This scroll background is
+                        awesome, really sets the mood.
+                    </p>
+                    <p>
+                        <strong>User3:</strong> I know, right? Perfect for a
+                        fantasy or old-school RPG theme.
+                    </p>
+                    <p>
+                        <strong>User1:</strong> We wanted something unique for
+                        our chat interface.
+                    </p>
+                    <p>
+                        <strong>User2:</strong> It looks like a map or a quest
+                        log. Very cool!
+                    </p>
+                    <p>
+                        <strong>User3:</strong> I wonder if the scroll can get
+                        longer if there's more text?
+                    </p>
+                    <p>
+                        <strong>User1:</strong> The SVG is designed to scale
+                        dynamically, but the visible "paper" area is fixed
+                        within the container's proportions. More text will
+                        simply scroll within this area.
+                    </p>
+                    <p>
+                        <strong>User2:</strong> Makes sense. It's a great
+                        starting point!
+                    </p>
+                    <p><strong>User3:</strong> Let's keep chatting then!</p>
+                    <p>
+                        <strong>User1:</strong> Indeed! What's everyone playing
+                        this weekend?
+                    </p>
+                    <p>
+                        <strong>User2:</strong> I'm thinking of firing up an old
+                        DOS game, maybe Commander Keen.
+                    </p>
+                    <p>
+                        <strong>User3:</strong> Ooh, good choice! I might dive
+                        back into Stardew Valley.
+                    </p>
+                    <p>
+                        <strong>User1:</strong> Both excellent! Enjoy your retro
+                        gaming!
+                    </p>
+                    <p><strong>User2:</strong> You too! Catch you later!</p>
+                    <p><strong>User3:</strong> Bye for now!</p>
+                    <p>
+                        <strong>User1:</strong> Hello again! Just adding more
+                        text to demonstrate scrolling.
+                    </p>
+                    <p><strong>User2:</strong> It's working perfectly!</p>
+                    <p>
+                        <strong>User3:</strong> This is a neat implementation
+                        for web interfaces.
+                    </p>
+                    <p>
+                        <strong>User1:</strong> Thanks! Simple yet effective for
+                        a themed design.
+                    </p>
+                    <p>
+                        <strong>User2:</strong> Totally agree. It brings back
+                        good memories.
+                    </p>
+                    <p>
+                        <strong>User3:</strong> Time for me to log off now, see
+                        you all!
+                    </p>
+                    <p><strong>User1:</strong> Bye!</p>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>
