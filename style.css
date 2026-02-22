@@ -211,3 +211,36 @@ h1 {
         font-size: clamp(10px, max(2vw, 2.5vh), 16px);
     }
 }
+
+/* Transparent Route Overrides */
+body.transparent-mode {
+    background-color: transparent !important;
+}
+
+body.transparent-mode .scroll-background {
+    display: none;
+}
+
+body.transparent-mode .chat-text-area {
+    /* Remove the absolute positioning specific to the SVG */
+    position: relative;
+    top: auto;
+    left: auto;
+
+    /* Make the chat area fill the screen */
+    width: 100vw;
+    height: 100vh;
+    padding: 20px;
+
+    /* Align text to the bottom */
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+}
+
+body.transparent-mode .chat-content {
+    /* Reset text shadow to make it pop against any background */
+    text-shadow: 2px 2px 0 #000, -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000;
+    color: white;
+    /* Ensure text is visible if background is dark */
+}

@@ -1,5 +1,10 @@
 const chatLog = document.getElementById("chatLog");
 
+// Check for transparent route
+if (window.location.pathname === '/transparent') {
+    document.body.classList.add('transparent-mode');
+}
+
 function addLogMessage(message, className = "systemMessage") {
     const messageElement = document.createElement("div");
     messageElement.classList.add(...className.split(" "));
