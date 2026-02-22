@@ -47,32 +47,51 @@ const client = new StreamerbotClient({
 });
 
 // TikTok Relay Connection
-const tiktokRelay = new WebSocket('ws://localhost:8081');
+async function initTikTokRelay() {
+    let backendUrl = 'ws://localhost:8081'; // default
 
-tiktokRelay.onopen = () => {
-    console.log('Connected to TikTok Relay server');
-};
-
-tiktokRelay.onmessage = (event) => {
-    const data = JSON.parse(event.data);
-
-    if (data.type === 'info') {
-        addLogMessage(data.message, "systemMessage blue");
-    } else if (data.type === 'tiktok-chat') {
-        const messageElement = document.createElement("div");
-        messageElement.classList.add("chatMessage");
-        messageElement.innerHTML = `<span class="username tiktok">[TikTok] ${data.user.name}:</span> ${data.message}`;
-        chatLog.appendChild(messageElement);
-
-        scrollToBottom();
-    } else if (data.type === 'tiktok-gift') {
-        addLogMessage(`🎁 ${data.user.name} sent ${data.gift} x${data.count}`, "systemMessage green");
+    try {
+        const response = await fetch('/env');
+        if (response.ok) {
+            const data = await response.json();
+            if (data.backendUrl) {
+                backendUrl = data.backendUrl;
+            }
+        }
+    } catch (e) {
+        console.warn('Could not fetch /env, using default ws://localhost:8081', e);
     }
-};
 
-tiktokRelay.onerror = (error) => {
-    console.error('TikTok Relay error:', error);
-};
+    console.log(`Attempting to connect to TikTok relay at: ${backendUrl}`);
+    const tiktokRelay = new WebSocket(backendUrl);
+
+    tiktokRelay.onopen = () => {
+        console.log('Connected to TikTok Relay server');
+    };
+
+    tiktokRelay.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+
+        if (data.type === 'info') {
+            addLogMessage(data.message, "systemMessage blue");
+        } else if (data.type === 'tiktok-chat') {
+            const messageElement = document.createElement("div");
+            messageElement.classList.add("chatMessage");
+            messageElement.innerHTML = `<span class="username tiktok">[TikTok] ${data.user.name}:</span> ${data.message}`;
+            chatLog.appendChild(messageElement);
+
+            scrollToBottom();
+        } else if (data.type === 'tiktok-gift') {
+            addLogMessage(`🎁 ${data.user.name} sent ${data.gift} x${data.count}`, "systemMessage green");
+        }
+    };
+
+    tiktokRelay.onerror = (error) => {
+        console.error('TikTok Relay error:', error);
+    };
+}
+
+initTikTokRelay();
 
 function scrollToBottom() {
     const chatTextArea = document.querySelector(".chat-text-area");
