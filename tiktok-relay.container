@@ -1,0 +1,12 @@
+[Unit]
+Description=TikTok Relay Server
+After=network-online.target
+
+[Container]
+Image=ghcr.io/braccae/tiktok-relay:latest
+PublishPort=8081:8081
+Environment=TIKTOK_USERNAME=<TIKTOK_USERNAME>
+AutoUpdate=registry
+
+[Install]
+WantedBy=default.target
