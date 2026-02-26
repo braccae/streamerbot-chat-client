@@ -13,18 +13,28 @@ console.log(`TikTok Relay Server started on ws://localhost:${RELAY_PORT}`);
 // Create TikTok connection
 let tiktokConnection = new TikTokLiveConnection(TIKTOK_USERNAME);
 
+let retryCount = 0;
+let retryTimeout = null;
+
 // Connect to TikTok
 function connectToTikTok() {
+    if (wss.clients.size === 0) {
+        console.log('No active frontend clients, skipping TikTok connection.');
+        return;
+    }
+
+    console.log(`Attempting to connect to TikTok (@${TIKTOK_USERNAME})...`);
     tiktokConnection.connect().then(state => {
+        retryCount = 0;
         console.info(`Connected to TikTok roomId ${state.roomId} (@${TIKTOK_USERNAME})`);
     }).catch(err => {
-        console.error('Failed to connect to TikTok. Retrying in 10s...', err);
-        setTimeout(connectToTikTok, 10000);
+        retryCount++;
+        const delay = Math.min(10000 * Math.pow(2, retryCount - 1), 300000); // Max 5 minutes
+        console.error(`Failed to connect to TikTok. Retrying in ${delay / 1000}s...`, err);
+        clearTimeout(retryTimeout);
+        retryTimeout = setTimeout(connectToTikTok, delay);
     });
 }
-
-connectToTikTok();
-
 // Broadcast helper
 function broadcast(data) {
     const message = JSON.stringify(data);
@@ -66,8 +76,12 @@ tiktokConnection.on('gift', data => {
 });
 
 tiktokConnection.on('disconnected', () => {
-    console.warn('TikTok connection lost. Reconnecting...');
-    connectToTikTok();
+    console.warn('TikTok connection lost.');
+    if (wss.clients.size > 0) {
+        console.log('Active clients found. Reconnecting...');
+        clearTimeout(retryTimeout);
+        connectToTikTok();
+    }
 });
 
 tiktokConnection.on('error', err => {
@@ -76,6 +90,22 @@ tiktokConnection.on('error', err => {
 
 // WebSocket Server Handlers
 wss.on('connection', ws => {
-    console.log('Frontend client connected to relay');
+    console.log(`Frontend client connected to relay. Total clients: ${wss.clients.size}`);
     ws.send(JSON.stringify({ type: 'info', message: `Connected to TikTok Relay (@${TIKTOK_USERNAME})` }));
+
+    // Connect if this is the first client
+    if (wss.clients.size === 1) {
+        retryCount = 0;
+        clearTimeout(retryTimeout);
+        connectToTikTok();
+    }
+
+    ws.on('close', () => {
+        console.log(`Frontend client disconnected. Total clients: ${wss.clients.size}`);
+        if (wss.clients.size === 0) {
+            console.log('All clients disconnected. Stopping TikTok connection.');
+            clearTimeout(retryTimeout);
+            tiktokConnection.disconnect();
+        }
+    });
 });
