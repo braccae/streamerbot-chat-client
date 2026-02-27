@@ -48,7 +48,7 @@ const client = new StreamerbotClient({
 
 // TikTok Relay Connection
 async function initTikTokRelay() {
-    let backendUrl = 'ws://localhost:8081'; // default
+    let backendUrl = 'ws://127.0.0.1:8081'; // default
 
     try {
         const response = await fetch('/env');
@@ -59,7 +59,7 @@ async function initTikTokRelay() {
             }
         }
     } catch (e) {
-        console.warn('Could not fetch /env, using default ws://localhost:8081', e);
+        console.warn('Could not fetch /env, using default ws://127.0.0.1:8081', e);
     }
 
     console.log(`Attempting to connect to TikTok relay at: ${backendUrl}`);
