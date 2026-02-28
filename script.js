@@ -1,7 +1,8 @@
 const chatLog = document.getElementById("chatLog");
 
-// Check for transparent route
-if (window.location.pathname === '/transparent') {
+// Check for transparent query parameter
+const urlParams = new URLSearchParams(window.location.search);
+if (urlParams.get('transparent') === 'true') {
     document.body.classList.add('transparent-mode');
 }
 

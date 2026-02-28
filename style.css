@@ -213,7 +213,7 @@ h1 {
     }
 }
 
-/* Transparent Route Overrides */
+/* Transparent Query Parameter Overrides (?transparent=true) */
 body.transparent-mode {
     background-color: transparent !important;
 }
