@@ -299,6 +299,10 @@ body.transparent-mode .chat-content {
 }
 
 body.transparent-mode #status-container {
+    /* When scroll is hidden, lock indicators to the true window corner */
+    position: fixed;
+    top: 10px;
+    right: 15px;
     background: rgba(0, 0, 0, 0.5);
     border-color: #fff;
     box-shadow: 4px 4px 0 #000;
