@@ -245,3 +245,70 @@ body.transparent-mode .chat-content {
     color: white;
     /* Ensure text is visible if background is dark */
 }
+
+/* Status Indicators */
+#status-container {
+    position: absolute;
+    /* Position on the top scroll roll */
+    top: calc(8 / 800 * 100%);
+    /* Adjust right position so it sits cleanly inside the scroll top roll */
+    right: calc(125 / 600 * 100%);
+    display: flex;
+    flex-direction: row;
+    /* Horizontally aligned */
+    gap: 12px;
+    z-index: 10;
+    padding: 6px 10px;
+    background-color: var(--scroll-paper-light);
+    border: 3px solid var(--shadow-dark);
+    border-radius: 6px;
+    box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.2);
+}
+
+.status-indicator {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+    font-size: 10px;
+}
+
+.status-label {
+    color: var(--shadow-dark);
+    text-transform: uppercase;
+}
+
+/* Pixel art square "dot" */
+.status-dot {
+    width: 6px;
+    height: 6px;
+    display: inline-block;
+    border: 1px solid var(--shadow-dark);
+    border-radius: 2px;
+}
+
+.status-dot.connected {
+    background-color: #2d7d32;
+    /* Inner slight highlight */
+    box-shadow: inset 2px 2px 0 rgba(255, 255, 255, 0.4);
+}
+
+.status-dot.disconnected {
+    background-color: #d32f2f;
+    box-shadow: inset 2px 2px 0 rgba(255, 255, 255, 0.4);
+}
+
+body.transparent-mode #status-container {
+    background: rgba(0, 0, 0, 0.5);
+    border-color: #fff;
+    box-shadow: 4px 4px 0 #000;
+}
+
+body.transparent-mode .status-label {
+    color: #fff;
+    text-shadow: 2px 2px 0 #000;
+}
+
+body.transparent-mode .status-dot {
+    border-color: #000;
+}

@@ -26,23 +26,26 @@ const client = new StreamerbotClient({
     port: 8080,
     endpoint: "/",
     onConnect: () => {
-        addLogMessage(
-            "Connected to Streamer.bot WebSocket.",
-            "systemMessage green",
-        );
+        const botStatus = document.getElementById('bot-status');
+        if (botStatus) {
+            botStatus.classList.remove('disconnected');
+            botStatus.classList.add('connected');
+        }
     },
     onDisconnect: () => {
-        addLogMessage(
-            "WebSocket disconnected. Attempting to reconnect...",
-            "systemMessage red",
-        );
+        const botStatus = document.getElementById('bot-status');
+        if (botStatus) {
+            botStatus.classList.remove('connected');
+            botStatus.classList.add('disconnected');
+        }
     },
     onError: (error) => {
         console.error("WebSocket error:", error);
-        addLogMessage(
-            "WebSocket error occurred. Check browser console for details.",
-            "systemMessage red",
-        );
+        const botStatus = document.getElementById('bot-status');
+        if (botStatus) {
+            botStatus.classList.remove('connected');
+            botStatus.classList.add('disconnected');
+        }
     },
 });
 
@@ -65,15 +68,35 @@ async function initTikTokRelay() {
     console.log(`Attempting to connect to TikTok relay at: ${backendUrl}`);
     const tiktokRelay = new WebSocket(backendUrl);
 
+    let pingInterval;
+
     tiktokRelay.onopen = () => {
         console.log('Connected to TikTok Relay server');
+        // Start keepalive ping
+        pingInterval = setInterval(() => {
+            if (tiktokRelay.readyState === WebSocket.OPEN) {
+                tiktokRelay.send(JSON.stringify({ type: 'ping' }));
+            }
+        }, 30000); // 30 seconds
     };
 
     tiktokRelay.onmessage = (event) => {
         const data = JSON.parse(event.data);
+        const tiktokStatus = document.getElementById('tiktok-status');
 
         if (data.type === 'info') {
-            addLogMessage(data.message, "systemMessage blue");
+            console.log("Relay Info:", data.message);
+            if (data.message.includes('Connected to TikTok LIVE') || data.message.includes('Already connected to TikTok LIVE')) {
+                if (tiktokStatus) {
+                    tiktokStatus.classList.remove('disconnected');
+                    tiktokStatus.classList.add('connected');
+                }
+            } else if (data.message.includes('TikTok connection lost') || data.message.includes('TikTok connection failed')) {
+                if (tiktokStatus) {
+                    tiktokStatus.classList.remove('connected');
+                    tiktokStatus.classList.add('disconnected');
+                }
+            }
         } else if (data.type === 'tiktok-chat') {
             const messageElement = document.createElement("div");
             messageElement.classList.add("chatMessage");
@@ -88,6 +111,15 @@ async function initTikTokRelay() {
 
     tiktokRelay.onerror = (error) => {
         console.error('TikTok Relay error:', error);
+    };
+
+    tiktokRelay.onclose = () => {
+        clearInterval(pingInterval);
+        const tiktokStatus = document.getElementById('tiktok-status');
+        if (tiktokStatus) {
+            tiktokStatus.classList.remove('connected');
+            tiktokStatus.classList.add('disconnected');
+        }
     };
 }
 
@@ -153,11 +185,6 @@ client.on("YouTube.Message", (data) => {
         });
     });
 });
-
-addLogMessage(
-    "Attempting to connect to Streamer.bot WebSocket...",
-    "systemMessage",
-);
 
 // Handle window resize to ensure proper alignment
 let resizeTimeout;
