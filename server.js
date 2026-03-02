@@ -20,6 +20,14 @@ let tiktokConnection = new TikTokLiveConnection(TIKTOK_USERNAME, {
     },
     websocketOptions: {
         timeout: 15000
+    },
+    signedWebSocketProvider: async (params) => {
+        const result = await tiktokConnection.webClient.fetchSignedWebSocketFromEuler(params);
+        if (result && (!result.wsUrl || result.wsUrl.startsWith('?'))) {
+            const baseUrl = 'wss://webcast.tiktok.com/webcast/im/fetch/';
+            result.wsUrl = baseUrl + (result.wsUrl || '');
+        }
+        return result;
     }
 });
 
