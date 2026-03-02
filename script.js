@@ -51,30 +51,39 @@ const client = new StreamerbotClient({
 });
 
 // TikTok Relay Connection
-async function initTikTokRelay() {
-    let backendUrl = 'ws://127.0.0.1:8081'; // default
+let tiktokRelay = null;
+let tiktokPingInterval = null;
+let tiktokReconnectTimer = null;
+let tiktokBackendUrl = 'ws://127.0.0.1:8081'; // default
 
+async function fetchEnv() {
     try {
         const response = await fetch('/env');
         if (response.ok) {
             const data = await response.json();
             if (data.backendUrl) {
-                backendUrl = data.backendUrl;
+                tiktokBackendUrl = data.backendUrl;
             }
         }
     } catch (e) {
         console.warn('Could not fetch /env, using default ws://127.0.0.1:8081', e);
     }
+}
 
-    console.log(`Attempting to connect to TikTok relay at: ${backendUrl}`);
-    const tiktokRelay = new WebSocket(backendUrl);
+async function connectTikTokRelay() {
+    // If already connecting or connected, do nothing
+    if (tiktokRelay && (tiktokRelay.readyState === WebSocket.OPEN || tiktokRelay.readyState === WebSocket.CONNECTING)) {
+        return;
+    }
 
-    let pingInterval;
+    console.log(`Attempting to connect to TikTok relay at: ${tiktokBackendUrl}`);
+    tiktokRelay = new WebSocket(tiktokBackendUrl);
 
     tiktokRelay.onopen = () => {
         console.log('Connected to TikTok Relay server');
         // Start keepalive ping
-        pingInterval = setInterval(() => {
+        clearInterval(tiktokPingInterval);
+        tiktokPingInterval = setInterval(() => {
             if (tiktokRelay.readyState === WebSocket.OPEN) {
                 tiktokRelay.send(JSON.stringify({ type: 'ping' }));
             }
@@ -115,13 +124,28 @@ async function initTikTokRelay() {
     };
 
     tiktokRelay.onclose = () => {
-        clearInterval(pingInterval);
+        console.log('TikTok Relay connection closed');
+        clearInterval(tiktokPingInterval);
         const tiktokStatus = document.getElementById('tiktok-status');
         if (tiktokStatus) {
             tiktokStatus.classList.remove('connected');
             tiktokStatus.classList.add('disconnected');
         }
     };
+}
+
+async function initTikTokRelay() {
+    await fetchEnv();
+    await connectTikTokRelay();
+
+    // Reconnection logic: attempt to connect every minute if disconnected
+    if (tiktokReconnectTimer) clearInterval(tiktokReconnectTimer);
+    tiktokReconnectTimer = setInterval(() => {
+        if (!tiktokRelay || (tiktokRelay.readyState !== WebSocket.OPEN && tiktokRelay.readyState !== WebSocket.CONNECTING)) {
+            console.log('TikTok Relay disconnected, attempting to reconnect...');
+            connectTikTokRelay();
+        }
+    }, 60000); // 60 seconds
 }
 
 initTikTokRelay();
