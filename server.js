@@ -10,25 +10,17 @@ const wss = new WebSocketServer({ port: RELAY_PORT });
 
 console.log(`TikTok Relay Server started on ws://localhost:${RELAY_PORT}`);
 
-// Create TikTok connection with increased timeouts
+// Create TikTok connection
+// fetchRoomInfoOnConnect: false — bypasses the unreliable TikTok room status check
+// that incorrectly returns status=4 (offline) even when the user IS live.
 let tiktokConnection = new TikTokLiveConnection(TIKTOK_USERNAME, {
-    clientParams: {
-        timeout: 15000 // 15 seconds
-    },
-    requestOptions: {
+    fetchRoomInfoOnConnect: false,
+    webClientOptions: {
         timeout: 15000
     },
-    websocketOptions: {
+    wsClientOptions: {
         timeout: 15000
     },
-    signedWebSocketProvider: async (params) => {
-        const result = await tiktokConnection.webClient.fetchSignedWebSocketFromEuler(params);
-        if (result && (!result.wsUrl || result.wsUrl.startsWith('?'))) {
-            const baseUrl = 'wss://webcast.tiktok.com/webcast/im/fetch/';
-            result.wsUrl = baseUrl + (result.wsUrl || '');
-        }
-        return result;
-    }
 });
 
 let retryCount = 0;
