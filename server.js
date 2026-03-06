@@ -51,12 +51,16 @@ function createConnection() {
     conn.on('gift', data => {
         const user = data.user || {};
         const nick = user.nickname || user.uniqueId || 'TikTok User';
-        const giftName = data.giftDetails?.name || String(data.giftId) || 'Gift';
+        // After simplifyObject, giftDetails is merged flat: name is at data.giftName,
+        // and the icon URL is at data.giftPictureUrl.
+        const giftName = data.giftName || String(data.giftId) || 'Gift';
+        const giftIconUrl = data.giftPictureUrl || null;
         console.log(`[gift] ${user.uniqueId} sent ${giftName} x${data.repeatCount}`);
         broadcast({
             type: 'tiktok-gift',
             user: { name: nick, id: user.uniqueId },
             gift: giftName,
+            giftIcon: giftIconUrl,
             count: data.repeatCount
         });
     });

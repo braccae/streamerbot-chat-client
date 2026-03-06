@@ -196,7 +196,10 @@ async function connectTikTokRelay() {
 
             scrollToBottom();
         } else if (data.type === 'tiktok-gift') {
-            addLogMessage(`🎁 ${data.user.name} sent ${data.gift} x${data.count}`, "systemMessage green");
+            const giftIconHtml = data.giftIcon
+                ? `<img src="${data.giftIcon}" alt="${data.gift}" style="height:1.2em;vertical-align:middle;margin-right:2px;">`
+                : '🎁';
+            addLogMessage(`${giftIconHtml} ${data.user.name} sent ${data.gift} x${data.count}`, "systemMessage green");
         }
     };
 
