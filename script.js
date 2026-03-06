@@ -362,7 +362,7 @@ if (window.HOLIDAY && window.HOLIDAY.friday13) {
             'chatMessage'
         );
         // Schedule next ghost between 45 and 150 seconds from now
-        const nextIn = (45 + Math.floor(Math.random() * 106)) * 1000;
+        const nextIn = (300 + Math.floor(Math.random() * 106)) * 1000;
         setTimeout(sendGhostMessage, nextIn);
     }
 
