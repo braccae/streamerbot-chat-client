@@ -1,9 +1,88 @@
 const chatLog = document.getElementById("chatLog");
 
+// Per-session user color map (resets on page refresh)
+const userColorMap = new Map();
+
+function getUserColor(username) {
+    if (userColorMap.has(username)) return userColorMap.get(username);
+    // Hash the username to a hue value (0–359)
+    let hash = 0;
+    for (let i = 0; i < username.length; i++) {
+        hash = (hash * 31 + username.charCodeAt(i)) >>> 0;
+    }
+    const hue = hash % 360;
+    // Use HSL: fixed saturation, lightness between 40–55% so it's colorful but not too dark/bright
+    const lightness = 40 + (hash % 16);
+    const color = `hsl(${hue}, 80%, ${lightness}%)`;
+    userColorMap.set(username, color);
+    return color;
+}
+
 // Check for transparent query parameter
 const urlParams = new URLSearchParams(window.location.search);
 if (urlParams.get('transparent') === 'true') {
     document.body.classList.add('transparent-mode');
+}
+
+// ── Holiday Easter Eggs ──────────────────────────────────────────────────────
+(function () {
+    const _now = new Date();
+    const _month = _now.getMonth() + 1; // 1-indexed
+    const _day = _now.getDate();
+    const _dow = _now.getDay();       // 0=Sun … 6=Sat (5=Fri)
+
+    window.HOLIDAY = {
+        aprilFools: _month === 4 && _day === 1,
+        valentines: _month === 2 && _day === 14,
+        halloween: _month === 10 && _day === 31,
+        christmas: _month === 12 && _day === 25,
+        stPatricks: _month === 3 && _day === 17,
+        newYears: _month === 1 && _day === 1,
+        friday13: _dow === 5 && _day === 13,
+    };
+})();
+
+// Upside-down character map for April Fools
+const FLIP_MAP = {
+    'a': 'ɐ', 'b': 'q', 'c': 'ɔ', 'd': 'p', 'e': 'ǝ', 'f': 'ɟ', 'g': 'ƃ', 'h': 'ɥ',
+    'i': 'ᴉ', 'j': 'ɾ', 'k': 'ʞ', 'l': 'l', 'm': 'ɯ', 'n': 'u', 'o': 'o', 'p': 'd',
+    'q': 'b', 'r': 'ɹ', 's': 's', 't': 'ʇ', 'u': 'n', 'v': 'ʌ', 'w': 'ʍ', 'x': 'x',
+    'y': 'ʎ', 'z': 'z',
+    'A': '∀', 'B': 'ᗺ', 'C': 'Ɔ', 'D': 'ᗡ', 'E': 'Ǝ', 'F': 'Ⅎ', 'G': 'פ', 'H': 'H',
+    'I': 'I', 'J': 'ſ', 'K': 'ʞ', 'L': '˥', 'M': 'W', 'N': 'N', 'O': 'O', 'P': 'Ԁ',
+    'Q': 'Q', 'R': 'ᴚ', 'S': 'S', 'T': '┴', 'U': '∩', 'V': 'Λ', 'W': 'M', 'X': 'X',
+    'Y': '⅄', 'Z': 'Z',
+    '0': '0', '1': 'Ɩ', '2': 'ᄅ', '3': 'Ɛ', '4': 'ㄣ', '5': 'ϛ', '6': '9', '7': 'ㄥ',
+    '8': '8', '9': '6',
+    ',': '\'', '.': ', ', '?': '¿', '!': '¡', '(': ')', ')': '(',
+    '[': ']', ']': '[', '{': '}', '}': '{', '<': '>', '>': '<',
+    "'": ',', '"': '„', '`': ',', ' ': ' ',
+};
+
+function flipText(str) {
+    return str
+        .split('')
+        .map(ch => FLIP_MAP[ch] ?? ch)
+        .reverse()
+        .join('');
+}
+
+/**
+ * Applies any active holiday effect to a chat message string.
+ * Returns the (possibly transformed) string.
+ */
+function applyHolidayEffects(text) {
+    if (!window.HOLIDAY) return text;
+    const H = window.HOLIDAY;
+
+    if (H.aprilFools) return flipText(text);
+    if (H.valentines) return `❤️ ${text} ❤️`;
+    if (H.halloween) return `🎃 ${text} 👻`;
+    if (H.christmas) return `🎄 ${text} 🎁`;
+    if (H.stPatricks) return `🍀 ${text} 🍀`;
+    if (H.newYears) return `🎆 ${text} 🥂`;
+
+    return text;
 }
 
 function addLogMessage(message, className = "systemMessage") {
@@ -110,7 +189,9 @@ async function connectTikTokRelay() {
         } else if (data.type === 'tiktok-chat') {
             const messageElement = document.createElement("div");
             messageElement.classList.add("chatMessage");
-            messageElement.innerHTML = `<span class="username tiktok">[TikTok] ${data.user.name}:</span> ${data.message}`;
+            const tiktokColor = getUserColor(data.user.name);
+            const tiktokMsg = applyHolidayEffects(data.message);
+            messageElement.innerHTML = `<span class="username tiktok" style="color:${tiktokColor}">[TikTok] ${data.user.name}:</span> ${tiktokMsg}`;
             chatLog.appendChild(messageElement);
 
             scrollToBottom();
@@ -174,7 +255,9 @@ client.on("Twitch.ChatMessage", (data) => {
 
     const messageElement = document.createElement("div");
     messageElement.classList.add("chatMessage");
-    messageElement.innerHTML = `<span class="username">[Twitch] ${userName}:</span> ${chatMessage}`;
+    const twitchColor = getUserColor(userName);
+    const twitchMsg = applyHolidayEffects(chatMessage);
+    messageElement.innerHTML = `<span class="username" style="color:${twitchColor}">[Twitch] ${userName}:</span> ${twitchMsg}`;
     chatLog.appendChild(messageElement);
 
     // Smooth scroll to the bottom of the chat text area
@@ -198,7 +281,9 @@ client.on("YouTube.Message", (data) => {
 
     const messageElement = document.createElement("div");
     messageElement.classList.add("chatMessage");
-    messageElement.innerHTML = `<span class="username youtube">[YouTube] ${userName}:</span> ${chatMessage}`;
+    const youtubeColor = getUserColor(userName);
+    const youtubeMsg = applyHolidayEffects(chatMessage);
+    messageElement.innerHTML = `<span class="username youtube" style="color:${youtubeColor}">[YouTube] ${userName}:</span> ${youtubeMsg}`;
     chatLog.appendChild(messageElement);
 
     // Smooth scroll to the bottom of the chat text area
@@ -239,3 +324,46 @@ window.addEventListener("orientationchange", () => {
         }
     }, 300);
 });
+
+// ── Friday the 13th: Ghost Messages ─────────────────────────────────────────
+if (window.HOLIDAY && window.HOLIDAY.friday13) {
+    const GHOST_USERS = [
+        '👻 Sp00ky_G', '💀 B0nes', '🕷️ Cr4wler', '🦇 DarkWing',
+        '☠️ R3aper', '🕸️ W3bsT3r', '👁️ WatcherX', '🩸 BloodM00n',
+        '😱 Shriek', '🌑 VoidWalker',
+    ];
+    const GHOST_MESSAGES = [
+        'Did you hear that?',
+        "I've been watching you...",
+        'Do not turn around.',
+        'The lights are going out soon.',
+        'Is anyone else cold right now?',
+        'Who invited me? Nobody does.',
+        'I died in this chat once before.',
+        'The 13th comes for us all.',
+        'I am still here.',
+        'Something is behind you.',
+        "You shouldn't have opened this chat.",
+        'They never found the body.',
+        'Run.',
+        'HEHEHEHE',
+        '...did that just move?',
+        'The static is getting louder.',
+    ];
+
+    function sendGhostMessage() {
+        const user = GHOST_USERS[Math.floor(Math.random() * GHOST_USERS.length)];
+        const msg = GHOST_MESSAGES[Math.floor(Math.random() * GHOST_MESSAGES.length)];
+        addLogMessage(
+            `<span class="username" style="color:#cc2222">${user}:</span> <em>${msg}</em>`,
+            'chatMessage'
+        );
+        // Schedule next ghost between 45 and 150 seconds from now
+        const nextIn = (45 + Math.floor(Math.random() * 106)) * 1000;
+        setTimeout(sendGhostMessage, nextIn);
+    }
+
+    // First ghost appears 30–90 seconds after page load
+    const firstDelay = (30 + Math.floor(Math.random() * 61)) * 1000;
+    setTimeout(sendGhostMessage, firstDelay);
+}
