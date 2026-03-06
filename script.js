@@ -329,7 +329,7 @@ window.addEventListener("orientationchange", () => {
 if (window.HOLIDAY && window.HOLIDAY.friday13) {
     const GHOST_USERS = [
         '👻 Sp00ky_G', '💀 B0nes', '🕷️ Cr4wler', '🦇 DarkWing',
-        '☠️ R3aper', '🕸️ W3bsT3r', '👁️ WatcherX', '🩸 BloodM00n',
+        '☠️ Death', '🕸️ W3bsT3r', '👁️ WatcherX', '🩸 BloodM00n',
         '😱 Shriek', '🌑 VoidWalker',
     ];
     const GHOST_MESSAGES = [
@@ -349,6 +349,9 @@ if (window.HOLIDAY && window.HOLIDAY.friday13) {
         'HEHEHEHE',
         '...did that just move?',
         'The static is getting louder.',
+        'I can see you',
+        'I\'m right behind you.',
+        'I\'m in your walls.',
     ];
 
     function sendGhostMessage() {
