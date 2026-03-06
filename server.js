@@ -5,156 +5,185 @@ const { WebSocketServer } = require('ws');
 const TIKTOK_USERNAME = process.env.TIKTOK_USERNAME || '@ultimateshades';
 const RELAY_PORT = process.env.PORT || 8081;
 
+// Retry interval while waiting for the stream to start (60 seconds)
+const RETRY_INTERVAL_MS = 60 * 1000;
+
 // Create WebSocket server
 const wss = new WebSocketServer({ port: RELAY_PORT });
 
 console.log(`TikTok Relay Server started on ws://localhost:${RELAY_PORT}`);
 
-// Create TikTok connection
-// fetchRoomInfoOnConnect: false — bypasses the unreliable TikTok room status check
-// that incorrectly returns status=4 (offline) even when the user IS live.
-let tiktokConnection = new TikTokLiveConnection(TIKTOK_USERNAME, {
-    fetchRoomInfoOnConnect: false,
-    webClientOptions: {
-        timeout: 15000
-    },
-    wsClientOptions: {
-        timeout: 15000
-    },
-});
-
-let retryCount = 0;
 let retryTimeout = null;
 let disconnectTimeout = null;
 let shouldBeConnected = false;
 let isTikTokConnected = false;
 
-// Connect to TikTok
-function connectToTikTok() {
-    if (!shouldBeConnected) {
-        console.log('Connection not required, skipping TikTok connection.');
-        return;
-    }
+// The active connection instance. A fresh one is created for each attempt
+// because the v2 library holds internal state that prevents reconnecting on
+// the same instance after a failed connect.
+let tiktokConnection = null;
 
-    console.log(`Attempting to connect to TikTok (@${TIKTOK_USERNAME})...`);
-    broadcast({ type: 'info', message: `Attempting to connect to TikTok (@${TIKTOK_USERNAME})...` });
-    tiktokConnection.connect().then(state => {
-        retryCount = 0;
-        isTikTokConnected = true;
-        console.info(`Connected to TikTok roomId ${state.roomId} (@${TIKTOK_USERNAME})`);
-        broadcast({ type: 'info', message: `Connected to TikTok LIVE (@${TIKTOK_USERNAME})!` });
-    }).catch(err => {
-        isTikTokConnected = false;
-        retryCount++;
-        const delay = Math.min(10000 * Math.pow(2, retryCount - 1), 300000); // Max 5 minutes
-        console.error(`Failed to connect to TikTok. Retrying in ${delay / 1000}s...`, err);
-        broadcast({ type: 'info', message: `TikTok connection failed. Retrying in ${delay / 1000}s...` });
-        clearTimeout(retryTimeout);
-        retryTimeout = setTimeout(connectToTikTok, delay);
+// ------------------------------------------------------------------
+// Connection factory — returns a new TikTokLiveConnection with all
+// event listeners attached.
+// ------------------------------------------------------------------
+function createConnection() {
+    const conn = new TikTokLiveConnection(TIKTOK_USERNAME, {
+        // Skip the room-info pre-flight check. TikTok's API unreliably
+        // returns status=4 (offline) even when the streamer IS live,
+        // which would throw UserOfflineError and block the connection.
+        fetchRoomInfoOnConnect: false,
+        webClientOptions: { timeout: 15000 },
+        wsClientOptions: { timeout: 15000 },
     });
+
+    conn.on('chat', data => {
+        const user = data.user || {};
+        const nick = user.nickname || user.uniqueId || 'TikTok User';
+        console.log(`[chat] ${user.uniqueId}: ${data.comment}`);
+        broadcast({
+            type: 'tiktok-chat',
+            user: { name: nick, id: user.uniqueId },
+            message: data.comment
+        });
+    });
+
+    conn.on('gift', data => {
+        const user = data.user || {};
+        const nick = user.nickname || user.uniqueId || 'TikTok User';
+        const giftName = data.giftDetails?.name || String(data.giftId) || 'Gift';
+        console.log(`[gift] ${user.uniqueId} sent ${giftName} x${data.repeatCount}`);
+        broadcast({
+            type: 'tiktok-gift',
+            user: { name: nick, id: user.uniqueId },
+            gift: giftName,
+            count: data.repeatCount
+        });
+    });
+
+    conn.on('disconnected', () => {
+        console.warn('[TikTok] Connection lost.');
+        isTikTokConnected = false;
+        broadcast({ type: 'tiktok-status', connected: false, message: 'TikTok connection lost.' });
+        if (shouldBeConnected) {
+            console.log('[TikTok] Scheduling reconnect in 60s...');
+            scheduleRetry(RETRY_INTERVAL_MS);
+        }
+    });
+
+    conn.on('error', err => {
+        console.error('[TikTok] Error:', err);
+    });
+
+    return conn;
 }
+
+// ------------------------------------------------------------------
+// Attempt a single connection. On failure, schedule a retry.
+// ------------------------------------------------------------------
+function connectToTikTok() {
+    if (!shouldBeConnected) return;
+
+    // Always start from a fresh instance so internal state is clean.
+    tiktokConnection = createConnection();
+
+    console.log(`[TikTok] Attempting to connect (@${TIKTOK_USERNAME})...`);
+    broadcast({ type: 'tiktok-status', connected: false, message: `Connecting to TikTok (@${TIKTOK_USERNAME})…` });
+
+    tiktokConnection.connect()
+        .then(state => {
+            isTikTokConnected = true;
+            clearTimeout(retryTimeout);
+            retryTimeout = null;
+            console.log(`[TikTok] Connected to roomId ${state.roomId} (@${TIKTOK_USERNAME})`);
+            broadcast({ type: 'tiktok-status', connected: true, message: `Connected to TikTok LIVE (@${TIKTOK_USERNAME})!` });
+        })
+        .catch(err => {
+            isTikTokConnected = false;
+            const errName = err?.constructor?.name || 'Error';
+            console.warn(`[TikTok] Connect failed (${errName}). Retrying in ${RETRY_INTERVAL_MS / 1000}s...`);
+            broadcast({
+                type: 'tiktok-status',
+                connected: false,
+                message: `Not live yet — retrying in ${RETRY_INTERVAL_MS / 1000}s…`
+            });
+            scheduleRetry(RETRY_INTERVAL_MS);
+        });
+}
+
+function scheduleRetry(delayMs) {
+    if (!shouldBeConnected) return;
+    clearTimeout(retryTimeout);
+    retryTimeout = setTimeout(connectToTikTok, delayMs);
+}
+
+// ------------------------------------------------------------------
 // Broadcast helper
+// ------------------------------------------------------------------
 function broadcast(data) {
     const message = JSON.stringify(data);
     wss.clients.forEach(client => {
-        if (client.readyState === 1) { // 1 = OPEN
+        if (client.readyState === 1) { // WebSocket.OPEN
             client.send(message);
         }
     });
 }
 
-// TikTok Event Listeners
-tiktokConnection.on('chat', data => {
-    const user = data.user || {};
-    const nick = user.nickname || user.uniqueId || 'TikTok User';
-    console.log(`${user.uniqueId}: ${data.comment}`);
-    broadcast({
-        type: 'tiktok-chat',
-        user: {
-            name: nick,
-            id: user.uniqueId
-        },
-        message: data.comment
-    });
-});
-
-tiktokConnection.on('gift', data => {
-    const user = data.user || {};
-    const nick = user.nickname || user.uniqueId || 'TikTok User';
-    console.log(`${user.uniqueId} sent ${data.giftName}`);
-    broadcast({
-        type: 'tiktok-gift',
-        user: {
-            name: nick,
-            id: user.uniqueId
-        },
-        gift: data.giftName,
-        count: data.repeatCount
-    });
-});
-
-tiktokConnection.on('disconnected', () => {
-    console.warn('TikTok connection lost.');
-    isTikTokConnected = false;
-    broadcast({ type: 'info', message: `TikTok connection lost.` });
-    if (shouldBeConnected) {
-        console.log('Active session. Reconnecting...');
-        clearTimeout(retryTimeout);
-        connectToTikTok();
-    }
-});
-
-tiktokConnection.on('error', err => {
-    console.error('TikTok error:', err);
-});
-
-// WebSocket Server Handlers
+// ------------------------------------------------------------------
+// WebSocket server — frontend clients connect here
+// ------------------------------------------------------------------
 wss.on('connection', ws => {
-    console.log(`Frontend client connected to relay. Total clients: ${wss.clients.size}`);
-    ws.send(JSON.stringify({ type: 'info', message: `Connected to local relay server.` }));
+    console.log(`[Relay] Frontend connected. Total clients: ${wss.clients.size}`);
+    ws.send(JSON.stringify({ type: 'info', message: 'Connected to local relay server.' }));
 
-    if (isTikTokConnected) {
-        ws.send(JSON.stringify({ type: 'info', message: `Already connected to TikTok LIVE (@${TIKTOK_USERNAME})!` }));
-    }
-
+    // Cancel any pending graceful-disconnect if a client reconnects
     clearTimeout(disconnectTimeout);
     disconnectTimeout = null;
 
-    if (!shouldBeConnected) {
+    if (isTikTokConnected) {
+        ws.send(JSON.stringify({
+            type: 'tiktok-status',
+            connected: true,
+            message: `Already connected to TikTok LIVE (@${TIKTOK_USERNAME})!`
+        }));
+    } else if (!shouldBeConnected) {
+        // First client — kick off the TikTok connection loop
         shouldBeConnected = true;
-        retryCount = 0;
-        clearTimeout(retryTimeout);
         connectToTikTok();
-    } else if (!isTikTokConnected) {
-        // If we should be connected but are not, we might be in a timeout waiting to retry.
-        // Let it naturally retry, but inform the client.
-        ws.send(JSON.stringify({ type: 'info', message: `TikTok connection in progress or retrying...` }));
+    } else {
+        ws.send(JSON.stringify({
+            type: 'tiktok-status',
+            connected: false,
+            message: 'Waiting for stream to start — retrying every 60s…'
+        }));
     }
 
-    ws.on('message', data => {
+    ws.on('message', rawData => {
         try {
-            const msg = JSON.parse(data.toString());
+            const msg = JSON.parse(rawData.toString());
             if (msg.type === 'ping') {
                 ws.send(JSON.stringify({ type: 'pong' }));
             }
-        } catch (e) {
-            // ignore parse errors
-        }
+        } catch (_) { /* ignore */ }
     });
 
     ws.on('close', () => {
-        console.log(`Frontend client disconnected. Total clients: ${wss.clients.size}`);
+        console.log(`[Relay] Frontend disconnected. Total clients: ${wss.clients.size}`);
         if (wss.clients.size === 0) {
-            console.log('All clients disconnected. Scheduling TikTok disconnect in 5 minutes.');
+            console.log('[Relay] No clients. Will stop TikTok connection in 5 minutes.');
             disconnectTimeout = setTimeout(() => {
                 if (wss.clients.size === 0) {
-                    console.log('5 minutes passed with no clients. Stopping TikTok connection.');
+                    console.log('[Relay] Stopping TikTok connection (no clients for 5 minutes).');
                     shouldBeConnected = false;
                     isTikTokConnected = false;
                     clearTimeout(retryTimeout);
-                    tiktokConnection.disconnect();
+                    retryTimeout = null;
+                    if (tiktokConnection) {
+                        tiktokConnection.disconnect();
+                        tiktokConnection = null;
+                    }
                 }
-            }, 300000); // 5 minutes
+            }, 5 * 60 * 1000);
         }
     });
 });
