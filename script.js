@@ -191,7 +191,7 @@ async function connectTikTokRelay() {
             messageElement.classList.add("chatMessage");
             const tiktokColor = getUserColor(data.user.name);
             const tiktokMsg = applyHolidayEffects(data.message);
-            messageElement.innerHTML = `<span class="username tiktok" style="color:${tiktokColor}">[TikTok] ${data.user.name}:</span> ${tiktokMsg}`;
+            messageElement.innerHTML = `<span class="username tiktok">[TikTok]</span> <span style="color:${tiktokColor}">${data.user.name}:</span> ${tiktokMsg}`;
             chatLog.appendChild(messageElement);
 
             scrollToBottom();
@@ -260,7 +260,7 @@ client.on("Twitch.ChatMessage", (data) => {
     messageElement.classList.add("chatMessage");
     const twitchColor = getUserColor(userName);
     const twitchMsg = applyHolidayEffects(chatMessage);
-    messageElement.innerHTML = `<span class="username" style="color:${twitchColor}">[Twitch] ${userName}:</span> ${twitchMsg}`;
+    messageElement.innerHTML = `<span class="username twitch">[Twitch]</span> <span style="color:${twitchColor}">${userName}:</span> ${twitchMsg}`;
     chatLog.appendChild(messageElement);
 
     // Smooth scroll to the bottom of the chat text area
@@ -286,7 +286,7 @@ client.on("YouTube.Message", (data) => {
     messageElement.classList.add("chatMessage");
     const youtubeColor = getUserColor(userName);
     const youtubeMsg = applyHolidayEffects(chatMessage);
-    messageElement.innerHTML = `<span class="username youtube" style="color:${youtubeColor}">[YouTube] ${userName}:</span> ${youtubeMsg}`;
+    messageElement.innerHTML = `<span class="username youtube">[YouTube]</span> <span style="color:${youtubeColor}">${userName}:</span> ${youtubeMsg}`;
     chatLog.appendChild(messageElement);
 
     // Smooth scroll to the bottom of the chat text area
