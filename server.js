@@ -91,11 +91,31 @@ function connectToTikTok() {
     // Always start from a fresh instance so internal state is clean.
     tiktokConnection = createConnection();
 
-    console.log(`[TikTok] Attempting to connect (@${TIKTOK_USERNAME})...`);
-    broadcast({ type: 'tiktok-status', connected: false, message: `Connecting to TikTok (@${TIKTOK_USERNAME})…` });
+    console.log(`[TikTok] Checking if @${TIKTOK_USERNAME} is live...`);
+    broadcast({ type: 'tiktok-status', connected: false, message: `Checking if @${TIKTOK_USERNAME} is live…` });
 
-    tiktokConnection.connect()
+    tiktokConnection.fetchIsLive()
+        .then(isLive => {
+            if (!shouldBeConnected) return;
+
+            if (!isLive) {
+                console.log(`[TikTok] @${TIKTOK_USERNAME} is not live. Retrying in ${RETRY_INTERVAL_MS / 1000}s...`);
+                broadcast({
+                    type: 'tiktok-status',
+                    connected: false,
+                    message: `@${TIKTOK_USERNAME} is not live — retrying in ${RETRY_INTERVAL_MS / 1000}s…`
+                });
+                scheduleRetry(RETRY_INTERVAL_MS);
+                return;
+            }
+
+            console.log(`[TikTok] @${TIKTOK_USERNAME} is live! Connecting...`);
+            broadcast({ type: 'tiktok-status', connected: false, message: `@${TIKTOK_USERNAME} is live! Connecting…` });
+
+            return tiktokConnection.connect();
+        })
         .then(state => {
+            if (!state) return; // not live branch returned early
             isTikTokConnected = true;
             clearTimeout(retryTimeout);
             retryTimeout = null;
@@ -105,11 +125,11 @@ function connectToTikTok() {
         .catch(err => {
             isTikTokConnected = false;
             const errName = err?.constructor?.name || 'Error';
-            console.warn(`[TikTok] Connect failed (${errName}). Retrying in ${RETRY_INTERVAL_MS / 1000}s...`);
+            console.warn(`[TikTok] Failed (${errName}). Retrying in ${RETRY_INTERVAL_MS / 1000}s...`);
             broadcast({
                 type: 'tiktok-status',
                 connected: false,
-                message: `Not live yet — retrying in ${RETRY_INTERVAL_MS / 1000}s…`
+                message: `Connection failed — retrying in ${RETRY_INTERVAL_MS / 1000}s…`
             });
             scheduleRetry(RETRY_INTERVAL_MS);
         });
@@ -158,7 +178,7 @@ wss.on('connection', ws => {
         ws.send(JSON.stringify({
             type: 'tiktok-status',
             connected: false,
-            message: 'Waiting for stream to start — retrying every 60s…'
+            message: 'Waiting for stream to start — retrying every 300s…'
         }));
     }
 
@@ -174,10 +194,10 @@ wss.on('connection', ws => {
     ws.on('close', () => {
         console.log(`[Relay] Frontend disconnected. Total clients: ${wss.clients.size}`);
         if (wss.clients.size === 0) {
-            console.log('[Relay] No clients. Will stop TikTok connection in 5 minutes.');
+            console.log('[Relay] No clients. Will stop TikTok connection in 30 seconds.');
             disconnectTimeout = setTimeout(() => {
                 if (wss.clients.size === 0) {
-                    console.log('[Relay] Stopping TikTok connection (no clients for 5 minutes).');
+                    console.log('[Relay] Stopping TikTok connection (no clients in the past 30 seconds).');
                     shouldBeConnected = false;
                     isTikTokConnected = false;
                     clearTimeout(retryTimeout);
@@ -187,7 +207,7 @@ wss.on('connection', ws => {
                         tiktokConnection = null;
                     }
                 }
-            }, 5 * 60 * 1000);
+            }, 30 * 1000);
         }
     });
 });
