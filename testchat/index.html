@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🧪 Test Chat Server</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --bg: #0f0f14;
+            --surface: #1a1a24;
+            --surface-hover: #22222f;
+            --border: #2a2a3a;
+            --border-focus: #6366f1;
+            --text: #e4e4ec;
+            --text-muted: #8888a0;
+            --accent: #6366f1;
+            --accent-hover: #818cf8;
+            --twitch: #9146ff;
+            --youtube: #ff4444;
+            --tiktok: #10908c;
+            --success: #22c55e;
+            --danger: #ef4444;
+            --radius: 10px;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            padding: 24px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+        .header h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--accent), #a78bfa, #ec4899);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 6px;
+        }
+        .header p {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+        @media (max-width: 768px) { .grid { grid-template-columns: 1fr; } }
+
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 24px;
+            transition: border-color 0.2s;
+        }
+        .card:hover { border-color: #3a3a50; }
+
+        .card h2 {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 18px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        label {
+            display: block;
+            font-size: 0.75rem;
+            font-weight: 500;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 6px;
+        }
+
+        .field { margin-bottom: 16px; }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 10px 14px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text);
+            font-family: inherit;
+            font-size: 0.9rem;
+            outline: none;
+            transition: border-color 0.15s;
+        }
+        input:focus, select:focus, textarea:focus {
+            border-color: var(--border-focus);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+        }
+        textarea { resize: vertical; min-height: 70px; }
+
+        .platform-tabs {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 16px;
+        }
+        .platform-tab {
+            flex: 1;
+            padding: 10px 8px;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            background: transparent;
+            color: var(--text-muted);
+            font-family: inherit;
+            font-size: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            transition: all 0.15s;
+            text-align: center;
+        }
+        .platform-tab:hover { background: var(--surface-hover); color: var(--text); }
+        .platform-tab.active[data-platform="twitch"] { border-color: var(--twitch); color: var(--twitch); background: rgba(145, 70, 255, 0.08); }
+        .platform-tab.active[data-platform="youtube"] { border-color: var(--youtube); color: var(--youtube); background: rgba(255, 68, 68, 0.08); }
+        .platform-tab.active[data-platform="tiktok"] { border-color: var(--tiktok); color: var(--tiktok); background: rgba(16, 144, 140, 0.08); }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+        .btn-primary {
+            background: var(--accent);
+            color: #fff;
+            width: 100%;
+        }
+        .btn-primary:hover { background: var(--accent-hover); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3); }
+        .btn-primary:active { transform: translateY(0); }
+
+        .btn-secondary {
+            background: var(--surface-hover);
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+        .btn-secondary:hover { background: #2a2a3a; }
+
+        .btn-danger { background: var(--danger); color: #fff; }
+        .btn-danger:hover { background: #dc2626; }
+
+        .quick-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-top: 12px;
+        }
+        .quick-actions .btn { font-size: 0.75rem; padding: 8px 12px; }
+
+        /* Status indicators */
+        .status-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 14px;
+            background: var(--bg);
+            border-radius: 8px;
+            margin-bottom: 8px;
+        }
+        .status-label { font-size: 0.8rem; font-weight: 500; }
+        .status-value {
+            font-size: 0.8rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .dot {
+            width: 8px; height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+        .dot.on { background: var(--success); box-shadow: 0 0 6px rgba(34, 197, 94, 0.5); }
+        .dot.off { background: var(--danger); }
+
+        /* Log area */
+        .log {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            line-height: 1.6;
+        }
+        .log .entry { margin-bottom: 2px; }
+        .log .entry.twitch { color: var(--twitch); }
+        .log .entry.youtube { color: var(--youtube); }
+        .log .entry.tiktok { color: var(--tiktok); }
+        .log .entry.error { color: var(--danger); }
+        .log .entry.system { color: var(--text-muted); font-style: italic; }
+
+        /* Gift section */
+        .gift-row {
+            display: grid;
+            grid-template-columns: 1fr 80px;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .chat-link {
+            display: block;
+            text-align: center;
+            margin-top: 8px;
+            padding: 10px;
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(168, 85, 247, 0.1));
+            border: 1px dashed var(--border);
+            border-radius: 8px;
+            color: var(--accent);
+            text-decoration: none;
+            font-size: 0.8rem;
+            font-weight: 500;
+            transition: all 0.15s;
+        }
+        .chat-link:hover {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(168, 85, 247, 0.15));
+            border-color: var(--accent);
+        }
+
+        .full-width { grid-column: 1 / -1; }
+
+        .kbd {
+            display: inline-block;
+            padding: 2px 6px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            font-size: 0.65rem;
+            color: var(--text-muted);
+            margin-left: 4px;
+            vertical-align: middle;
+        }
+
+        /* Auto-send indicator */
+        .auto-indicator {
+            display: none;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 12px;
+            background: rgba(99, 102, 241, 0.1);
+            border: 1px solid var(--accent);
+            border-radius: 8px;
+            margin-top: 12px;
+            font-size: 0.75rem;
+            color: var(--accent);
+        }
+        .auto-indicator.active { display: flex; }
+        .pulse {
+            width: 8px; height: 8px;
+            border-radius: 50%;
+            background: var(--accent);
+            animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.4; transform: scale(0.7); }
+        }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <h1>🧪 Test Chat Server</h1>
+    <p>Send fake chat messages to the frontend • <a href="/index.html?local=true" style="color: var(--accent);">Open Chat Frontend</a></p>
+</div>
+
+<div class="grid">
+    <!-- ── Send Message Card ────────────────────────────────────── -->
+    <div class="card">
+        <h2>💬 Send Message</h2>
+
+        <div class="platform-tabs" id="platformTabs">
+            <button class="platform-tab active" data-platform="twitch">Twitch</button>
+            <button class="platform-tab" data-platform="youtube">YouTube</button>
+            <button class="platform-tab" data-platform="tiktok">TikTok</button>
+        </div>
+
+        <div class="field">
+            <label for="username">Username</label>
+            <input type="text" id="username" value="TestTwitchUser" placeholder="Enter username">
+        </div>
+
+        <div class="field">
+            <label for="message">Message</label>
+            <textarea id="message" placeholder="Type a chat message…" rows="2"></textarea>
+        </div>
+
+        <button class="btn btn-primary" id="sendBtn">Send Message <span class="kbd">Enter</span></button>
+
+        <div class="quick-actions">
+            <button class="btn btn-secondary" id="randomBtn">🎲 Random Message</button>
+            <button class="btn btn-secondary" id="autoBtn">⚡ Auto-Send</button>
+            <button class="btn btn-secondary" id="burstBtn">💥 Burst (5)</button>
+            <button class="btn btn-secondary" id="allPlatformsBtn">🌐 All Platforms</button>
+        </div>
+
+        <div class="auto-indicator" id="autoIndicator">
+            <span class="pulse"></span>
+            <span>Auto-sending every <strong id="autoInterval">2</strong>s</span>
+            <button class="btn btn-danger" id="autoStopBtn" style="margin-left:auto; padding:4px 10px; font-size:0.7rem;">Stop</button>
+        </div>
+    </div>
+
+    <!-- ── Status & TikTok Gifts Card ───────────────────────────── -->
+    <div class="card">
+        <h2>📡 Status & Gifts</h2>
+
+        <div class="status-row">
+            <span class="status-label">Streamerbot WS (8080)</span>
+            <span class="status-value"><span class="dot off" id="sbDot"></span> <span id="sbCount">0</span> clients</span>
+        </div>
+        <div class="status-row">
+            <span class="status-label">TikTok Relay WS (8081)</span>
+            <span class="status-value"><span class="dot off" id="tkDot"></span> <span id="tkCount">0</span> clients</span>
+        </div>
+
+        <a class="chat-link" href="/index.html?local=true" target="_blank">🖥️ Open Chat Frontend (local mode)</a>
+        <a class="chat-link" href="/index.html?local=true&transparent=true" target="_blank" style="margin-top:6px;">🪟 Open Transparent Mode</a>
+
+        <div style="margin-top:20px;">
+            <h2>🎁 Send TikTok Gift</h2>
+            <div class="field">
+                <label for="giftUser">Username</label>
+                <input type="text" id="giftUser" value="GiftSender" placeholder="Gift sender name">
+            </div>
+            <div class="gift-row">
+                <div class="field" style="margin-bottom:0">
+                    <label for="giftName">Gift Name</label>
+                    <input type="text" id="giftName" value="Rose" placeholder="Gift name">
+                </div>
+                <div class="field" style="margin-bottom:0">
+                    <label for="giftCount">Count</label>
+                    <input type="number" id="giftCount" value="1" min="1">
+                </div>
+            </div>
+            <button class="btn btn-primary" id="sendGiftBtn" style="background: var(--tiktok);">🎁 Send Gift</button>
+        </div>
+    </div>
+
+    <!-- ── Log Card (full width) ────────────────────────────────── -->
+    <div class="card full-width">
+        <h2>📋 Activity Log</h2>
+        <div class="log" id="activityLog">
+            <div class="entry system">Test chat server dashboard loaded. Ready to send messages.</div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ── State ────────────────────────────────────────────────────────────────
+    let currentPlatform = 'twitch';
+    let autoTimer = null;
+
+    const DEFAULT_USERS = {
+        twitch: 'TestTwitchUser',
+        youtube: 'TestYouTubeUser',
+        tiktok: 'TestTikTokUser',
+    };
+
+    const RANDOM_MESSAGES = [
+        'Hello chat! 👋',
+        'Pog this is amazing',
+        'LOL that was funny',
+        'GG no re',
+        'Can you play my favorite song?',
+        'First time here, love the stream!',
+        'Chat is moving so fast nobody will see this',
+        'hahahahaha',
+        'Wow incredible play!',
+        'Is this live right now?',
+        'LETS GOOOOO',
+        'Nice one!',
+        'bro what just happened',
+        'This is the content I subscribed for',
+        'KEKW',
+        'rip',
+        'Can you say hi to me?',
+        'What game is this?',
+        'W stream',
+        'Sadge',
+    ];
+
+    const RANDOM_NAMES = {
+        twitch: ['xXg4merXx', 'StreamFan99', 'ChillVibes', 'NightOwl_TTV', 'PixelPusher', 'ShadowWolf'],
+        youtube: ['CoolViewer', 'SubscriberOne', 'YT_Watcher', 'TechNerd42', 'MusicLover', 'VlogLife'],
+        tiktok: ['TikTokKing', 'DanceMachine', 'FYP_Star', 'ViralMoment', 'TrendSetter', 'ForYouPage'],
+    };
+
+    // ── Elements ─────────────────────────────────────────────────────────────
+    const $ = id => document.getElementById(id);
+    const usernameInput = $('username');
+    const messageInput  = $('message');
+    const logEl         = $('activityLog');
+
+    // ── Platform Tabs ────────────────────────────────────────────────────────
+    document.querySelectorAll('.platform-tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+            document.querySelectorAll('.platform-tab').forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            currentPlatform = tab.dataset.platform;
+            usernameInput.value = DEFAULT_USERS[currentPlatform];
+        });
+    });
+
+    // ── Logging ──────────────────────────────────────────────────────────────
+    function log(text, cls = '') {
+        const d = document.createElement('div');
+        d.className = `entry ${cls}`;
+        const time = new Date().toLocaleTimeString();
+        d.textContent = `[${time}] ${text}`;
+        logEl.appendChild(d);
+        logEl.scrollTop = logEl.scrollHeight;
+    }
+
+    // ── API ──────────────────────────────────────────────────────────────────
+    async function sendMessage(platform, username, message) {
+        try {
+            const res = await fetch('/send', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ platform, username, message }),
+            });
+            const data = await res.json();
+            if (data.ok) {
+                log(`${platform.toUpperCase()} → ${username}: ${message}`, platform);
+            } else {
+                log(`Error: ${data.error}`, 'error');
+            }
+        } catch (e) {
+            log(`Network error: ${e.message}`, 'error');
+        }
+    }
+
+    async function sendGift(username, giftName, giftCount) {
+        try {
+            const res = await fetch('/send', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ platform: 'tiktok-gift', username, giftName, giftCount: parseInt(giftCount) }),
+            });
+            const data = await res.json();
+            if (data.ok) {
+                log(`GIFT → ${username} sent ${giftName} x${giftCount}`, 'tiktok');
+            } else {
+                log(`Error: ${data.error}`, 'error');
+            }
+        } catch (e) {
+            log(`Network error: ${e.message}`, 'error');
+        }
+    }
+
+    // ── Status Polling ───────────────────────────────────────────────────────
+    async function pollStatus() {
+        try {
+            const res = await fetch('/status');
+            const data = await res.json();
+            $('sbCount').textContent = data.streamerbot.clients;
+            $('tkCount').textContent = data.tiktok.clients;
+            $('sbDot').className = `dot ${data.streamerbot.clients > 0 ? 'on' : 'off'}`;
+            $('tkDot').className = `dot ${data.tiktok.clients > 0 ? 'on' : 'off'}`;
+        } catch (_) {}
+    }
+    pollStatus();
+    setInterval(pollStatus, 2000);
+
+    // ── Send Button ──────────────────────────────────────────────────────────
+    $('sendBtn').addEventListener('click', () => {
+        const msg = messageInput.value.trim();
+        if (!msg) return;
+        sendMessage(currentPlatform, usernameInput.value || DEFAULT_USERS[currentPlatform], msg);
+        messageInput.value = '';
+        messageInput.focus();
+    });
+
+    // Enter key to send
+    messageInput.addEventListener('keydown', e => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            $('sendBtn').click();
+        }
+    });
+
+    // ── Random Message ───────────────────────────────────────────────────────
+    function getRandomMessage() {
+        return RANDOM_MESSAGES[Math.floor(Math.random() * RANDOM_MESSAGES.length)];
+    }
+    function getRandomName(platform) {
+        const names = RANDOM_NAMES[platform] || RANDOM_NAMES.twitch;
+        return names[Math.floor(Math.random() * names.length)];
+    }
+
+    $('randomBtn').addEventListener('click', () => {
+        const name = getRandomName(currentPlatform);
+        const msg = getRandomMessage();
+        sendMessage(currentPlatform, name, msg);
+    });
+
+    // ── Auto-Send ────────────────────────────────────────────────────────────
+    $('autoBtn').addEventListener('click', () => {
+        if (autoTimer) { stopAuto(); return; }
+        const interval = 2000;
+        $('autoIndicator').classList.add('active');
+        $('autoBtn').textContent = '⏹ Stop Auto';
+        autoTimer = setInterval(() => {
+            const plats = ['twitch', 'youtube', 'tiktok'];
+            const plat = plats[Math.floor(Math.random() * plats.length)];
+            sendMessage(plat, getRandomName(plat), getRandomMessage());
+        }, interval);
+    });
+
+    function stopAuto() {
+        clearInterval(autoTimer);
+        autoTimer = null;
+        $('autoIndicator').classList.remove('active');
+        $('autoBtn').textContent = '⚡ Auto-Send';
+    }
+    $('autoStopBtn').addEventListener('click', stopAuto);
+
+    // ── Burst ────────────────────────────────────────────────────────────────
+    $('burstBtn').addEventListener('click', () => {
+        for (let i = 0; i < 5; i++) {
+            setTimeout(() => {
+                sendMessage(currentPlatform, getRandomName(currentPlatform), getRandomMessage());
+            }, i * 200);
+        }
+    });
+
+    // ── All Platforms ────────────────────────────────────────────────────────
+    $('allPlatformsBtn').addEventListener('click', () => {
+        ['twitch', 'youtube', 'tiktok'].forEach((plat, i) => {
+            setTimeout(() => {
+                sendMessage(plat, getRandomName(plat), getRandomMessage());
+            }, i * 300);
+        });
+    });
+
+    // ── Gift Button ──────────────────────────────────────────────────────────
+    $('sendGiftBtn').addEventListener('click', () => {
+        sendGift($('giftUser').value, $('giftName').value, $('giftCount').value);
+    });
+</script>
+
+</body>
+</html>

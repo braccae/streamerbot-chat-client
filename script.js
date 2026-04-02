@@ -24,6 +24,12 @@ if (urlParams.get('transparent') === 'true') {
     document.body.classList.add('transparent-mode');
 }
 
+// Local test mode: ?local=true forces all WebSocket connections to localhost
+const isLocalMode = urlParams.get('local') === 'true';
+if (isLocalMode) {
+    console.log('[LocalMode] Enabled — WebSocket connections locked to localhost');
+}
+
 // ── Holiday Easter Eggs ──────────────────────────────────────────────────────
 (function () {
     const _now = new Date();
@@ -42,28 +48,15 @@ if (urlParams.get('transparent') === 'true') {
     };
 })();
 
-// Upside-down character map for April Fools
-const FLIP_MAP = {
-    'a': 'ɐ', 'b': 'q', 'c': 'ɔ', 'd': 'p', 'e': 'ǝ', 'f': 'ɟ', 'g': 'ƃ', 'h': 'ɥ',
-    'i': 'ᴉ', 'j': 'ɾ', 'k': 'ʞ', 'l': 'l', 'm': 'ɯ', 'n': 'u', 'o': 'o', 'p': 'd',
-    'q': 'b', 'r': 'ɹ', 's': 's', 't': 'ʇ', 'u': 'n', 'v': 'ʌ', 'w': 'ʍ', 'x': 'x',
-    'y': 'ʎ', 'z': 'z',
-    'A': '∀', 'B': 'ᗺ', 'C': 'Ɔ', 'D': 'ᗡ', 'E': 'Ǝ', 'F': 'Ⅎ', 'G': 'פ', 'H': 'H',
-    'I': 'I', 'J': 'ſ', 'K': 'ʞ', 'L': '˥', 'M': 'W', 'N': 'N', 'O': 'O', 'P': 'Ԁ',
-    'Q': 'Q', 'R': 'ᴚ', 'S': 'S', 'T': '┴', 'U': '∩', 'V': 'Λ', 'W': 'M', 'X': 'X',
-    'Y': '⅄', 'Z': 'Z',
-    '0': '0', '1': 'Ɩ', '2': 'ᄅ', '3': 'Ɛ', '4': 'ㄣ', '5': 'ϛ', '6': '9', '7': 'ㄥ',
-    '8': '8', '9': '6',
-    ',': '\'', '.': ', ', '?': '¿', '!': '¡', '(': ')', ')': '(',
-    '[': ']', ']': '[', '{': '}', '}': '{', '<': '>', '>': '<',
-    "'": ',', '"': '„', '`': ',', ' ': ' ',
-};
-
+// Upside-down April Fools effect using CSS rotation to preserve pixel fonts
 function flipText(str) {
     return str
-        .split('')
-        .map(ch => FLIP_MAP[ch] ?? ch)
+        .split(/(\s+)/)
         .reverse()
+        .map(part => {
+            if (/^\s*$/.test(part)) return part; // Keep whitespace as-is for native wrapping
+            return `<span style="display:inline-block; transform:rotate(180deg);">${part}</span>`;
+        })
         .join('');
 }
 
@@ -219,7 +212,7 @@ async function connectTikTokRelay() {
 }
 
 async function initTikTokRelay() {
-    await fetchEnv();
+    if (!isLocalMode) await fetchEnv();
     await connectTikTokRelay();
 
     // Reconnection logic: attempt to connect every minute if disconnected
