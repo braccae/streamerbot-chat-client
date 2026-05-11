@@ -7,7 +7,7 @@
   "dependencies": {
     "@streamerbot/client": "^1.11.0",
     "tiktok-live-connector": "^2.1.1-beta1",
-    "ws": "^8.19.0"
+    "ws": "^8.20.0"
   },
   "devDependencies": {
     "wrangler": "^4.67.0"
