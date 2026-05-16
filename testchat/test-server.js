@@ -254,10 +254,10 @@ function handleSend(platform, username, message, giftName, giftCount) {
             broadcastTikTok(buildTikTokChat(username, message));
             console.log(`[Send] TikTok – ${username}: ${message}`);
             break;
-        case 'tiktok-gift':
-            broadcastTikTok(buildTikTokGift(username, giftName || 'Rose', giftCount || 1));
-            console.log(`[Send] TikTok Gift – ${username}: ${giftName} x${giftCount}`);
-            break;
+        // case 'tiktok-gift':
+        //     broadcastTikTok(buildTikTokGift(username, giftName || 'Rose', giftCount || 1));
+        //     console.log(`[Send] TikTok Gift – ${username}: ${giftName} x${giftCount}`);
+        //     break;
         default:
             throw new Error(`Unknown platform: ${platform}`);
     }

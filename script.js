@@ -188,11 +188,11 @@ async function connectTikTokRelay() {
             chatLog.appendChild(messageElement);
 
             scrollToBottom();
-        } else if (data.type === 'tiktok-gift') {
-            const giftIconHtml = data.giftIcon
-                ? `<img src="${data.giftIcon}" alt="${data.gift}" style="height:1.2em;vertical-align:middle;margin-right:2px;">`
-                : '🎁';
-            addLogMessage(`${giftIconHtml} ${data.user.name} sent ${data.gift} x${data.count}`, "systemMessage green");
+        // } else if (data.type === 'tiktok-gift') {
+        //     const giftIconHtml = data.giftIcon
+        //         ? `<img src="${data.giftIcon}" alt="${data.gift}" style="height:1.2em;vertical-align:middle;margin-right:2px;">`
+        //         : '🎁';
+        //     addLogMessage(`${giftIconHtml} ${data.user.name} sent ${data.gift} x${data.count}`, "systemMessage green");
         }
     };
 
