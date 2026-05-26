@@ -44,6 +44,12 @@ if (isLocalMode) {
     console.log('[LocalMode] Enabled — WebSocket connections locked to localhost');
 }
 
+// TikTok mode: ?tiktok=false disables TikTok chat integration
+const showTiktok = urlParams.get('tiktok') !== 'false';
+if (!showTiktok) {
+    console.log('[TikTok] Integration disabled via query parameter');
+}
+
 // ── Holiday Easter Eggs ──────────────────────────────────────────────────────
 (function () {
     const _now = new Date();
@@ -275,7 +281,18 @@ async function initTikTokRelay() {
     }, 60000); // 60 seconds
 }
 
-initTikTokRelay();
+if (showTiktok) {
+    initTikTokRelay();
+} else {
+    // Hide the TikTok status indicator from UI if disabled
+    const tiktokStatus = document.getElementById('tiktok-status');
+    if (tiktokStatus) {
+        const indicator = tiktokStatus.closest('.status-indicator');
+        if (indicator) {
+            indicator.style.display = 'none';
+        }
+    }
+}
 
 function scrollToBottom() {
     const chatTextArea = document.querySelector(".chat-text-area");
