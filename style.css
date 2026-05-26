@@ -218,16 +218,16 @@ h1 {
     }
 }
 
-/* Transparent Query Parameter Overrides (?transparent=true) */
-body.transparent-mode {
+/* Transparent Theme Selectors (Supports both legacy ?transparent=true and new ?theme=transparent) */
+body.transparent-mode, body.theme-transparent {
     background-color: transparent !important;
 }
 
-body.transparent-mode .scroll-background {
+body.transparent-mode .scroll-background, body.theme-transparent .scroll-background {
     display: none;
 }
 
-body.transparent-mode .chat-text-area {
+body.transparent-mode .chat-text-area, body.theme-transparent .chat-text-area {
     /* Remove the absolute positioning specific to the SVG */
     position: relative;
     top: auto;
@@ -244,7 +244,7 @@ body.transparent-mode .chat-text-area {
     justify-content: flex-end;
 }
 
-body.transparent-mode .chat-content {
+body.transparent-mode .chat-content, body.theme-transparent .chat-content {
     /* Reset text shadow to make it pop against any background */
     text-shadow: 2px 2px 0 #000, -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000;
     color: white;
@@ -303,7 +303,7 @@ body.transparent-mode .chat-content {
     box-shadow: inset 2px 2px 0 rgba(255, 255, 255, 0.4);
 }
 
-body.transparent-mode #status-container {
+body.transparent-mode #status-container, body.theme-transparent #status-container {
     /* When scroll is hidden, lock indicators to the true window corner */
     position: fixed;
     top: 10px;
@@ -313,11 +313,369 @@ body.transparent-mode #status-container {
     box-shadow: 4px 4px 0 #000;
 }
 
-body.transparent-mode .status-label {
+body.transparent-mode .status-label, body.theme-transparent .status-label {
     color: #fff;
     text-shadow: 2px 2px 0 #000;
 }
 
-body.transparent-mode .status-dot {
+body.transparent-mode .status-dot, body.theme-transparent .status-dot {
     border-color: #000;
+}
+
+/* ── Theme: Cyber Terminal (?theme=dark-terminal) ─────────────────────────── */
+body.theme-dark-terminal {
+    background-color: #08080c !important;
+    background-image: radial-gradient(circle at center, #141226 0%, #08080c 100%) !important;
+    font-family: 'Courier New', Courier, monospace !important;
+}
+
+/* CRT Scanlines Overlay */
+body.theme-dark-terminal::after {
+    content: " ";
+    display: block;
+    position: fixed;
+    top: 0; left: 0; bottom: 0; right: 0;
+    background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+    z-index: 9999;
+    background-size: 100% 4px, 6px 100%;
+    pointer-events: none;
+}
+
+body.theme-dark-terminal .scroll-background {
+    display: none;
+}
+
+body.theme-dark-terminal .chat-text-area {
+    position: relative;
+    top: auto;
+    left: auto;
+    width: 90vw;
+    height: 85vh;
+    padding: 20px;
+    background: rgba(10, 10, 15, 0.75);
+    border: 2px solid #39ff14;
+    box-shadow: 0 0 15px rgba(57, 255, 20, 0.2), inset 0 0 15px rgba(57, 255, 20, 0.1);
+    border-radius: 4px;
+    margin-top: 5vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+}
+
+body.theme-dark-terminal .chat-content {
+    font-family: 'Courier New', Courier, monospace !important;
+    color: #39ff14 !important;
+    text-shadow: 0 0 4px rgba(57, 255, 20, 0.6) !important;
+    font-size: clamp(14px, 1.8vw, 20px) !important;
+}
+
+body.theme-dark-terminal .chatMessage {
+    border-left: 2px solid rgba(57, 255, 20, 0.3);
+    padding-left: 10px;
+    margin-bottom: 12px;
+}
+
+body.theme-dark-terminal .username.twitch {
+    color: #ff00ff !important;
+    text-shadow: 0 0 4px rgba(255, 0, 255, 0.6) !important;
+}
+
+body.theme-dark-terminal .username.youtube {
+    color: #ff3333 !important;
+    text-shadow: 0 0 4px rgba(255, 51, 51, 0.6) !important;
+}
+
+body.theme-dark-terminal .username.tiktok {
+    color: #00ffff !important;
+    text-shadow: 0 0 4px rgba(0, 255, 255, 0.6) !important;
+}
+
+body.theme-dark-terminal .systemMessage {
+    color: #888 !important;
+    text-shadow: none !important;
+}
+
+body.theme-dark-terminal #status-container {
+    position: fixed;
+    top: 15px;
+    right: 15px;
+    background: rgba(10, 10, 15, 0.9);
+    border: 1px solid #39ff14;
+    border-radius: 4px;
+    box-shadow: 0 0 10px rgba(57, 255, 20, 0.2);
+}
+
+body.theme-dark-terminal .status-label {
+    color: #39ff14;
+    font-family: 'Courier New', Courier, monospace !important;
+    text-shadow: 0 0 4px rgba(57, 255, 20, 0.4);
+}
+
+body.theme-dark-terminal .status-dot {
+    border-color: #39ff14;
+}
+
+body.theme-dark-terminal .chat-text-area::-webkit-scrollbar-track {
+    background: rgba(57, 255, 20, 0.05);
+}
+
+body.theme-dark-terminal .chat-text-area::-webkit-scrollbar-thumb {
+    background: rgba(57, 255, 20, 0.3);
+    border-radius: 0px;
+}
+
+body.theme-dark-terminal .chat-text-area::-webkit-scrollbar-thumb:hover {
+    background: rgba(57, 255, 20, 0.6);
+}
+
+/* ── Theme: Glass Gradient (?theme=glass-gradient) ─────────────────────── */
+body.theme-glass-gradient {
+    background: linear-gradient(125deg, #130a2a, #1a0f3c, #0d0614, #08031d) !important;
+    background-size: 400% 400% !important;
+    animation: gradientShift 15s ease infinite !important;
+    font-family: 'Outfit', 'Inter', sans-serif !important;
+}
+
+@keyframes gradientShift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+body.theme-glass-gradient .scroll-background {
+    display: none;
+}
+
+body.theme-glass-gradient .chat-text-area {
+    position: relative;
+    top: auto;
+    left: auto;
+    width: 90vw;
+    height: 85vh;
+    padding: 24px;
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 24px;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    margin-top: 5vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    transition: all 0.3s ease;
+}
+
+body.theme-glass-gradient .chat-content {
+    font-family: 'Outfit', 'Inter', sans-serif !important;
+    color: #f1f1f6 !important;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.15) !important;
+    font-size: clamp(14px, 1.8vw, 20px) !important;
+}
+
+body.theme-glass-gradient .chatMessage {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.03);
+    border-radius: 12px;
+    padding: 12px 16px;
+    margin-bottom: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    transition: transform 0.2s ease, background 0.2s ease;
+    animation: messageSlideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes messageSlideIn {
+    0% { opacity: 0; transform: translateY(10px); }
+    100% { opacity: 1; transform: translateY(0); }
+}
+
+body.theme-glass-gradient .chatMessage:hover {
+    transform: translateY(-2px);
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.08);
+}
+
+body.theme-glass-gradient .username {
+    font-weight: 600;
+}
+
+body.theme-glass-gradient .username.twitch {
+    color: #c084fc !important; /* Pastel violet */
+    text-shadow: 0 0 10px rgba(192, 132, 252, 0.3) !important;
+}
+
+body.theme-glass-gradient .username.youtube {
+    color: #f87171 !important; /* Pastel red */
+    text-shadow: 0 0 10px rgba(248, 113, 113, 0.3) !important;
+}
+
+body.theme-glass-gradient .username.tiktok {
+    color: #2dd4bf !important; /* Pastel teal */
+    text-shadow: 0 0 10px rgba(45, 212, 191, 0.3) !important;
+}
+
+body.theme-glass-gradient .systemMessage {
+    color: rgba(255, 255, 255, 0.6) !important;
+    text-shadow: none !important;
+    font-size: 0.9em;
+}
+
+body.theme-glass-gradient #status-container {
+    position: fixed;
+    top: 15px;
+    right: 15px;
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+body.theme-glass-gradient .status-label {
+    color: rgba(255, 255, 255, 0.8);
+    font-family: 'Outfit', 'Inter', sans-serif !important;
+    font-weight: 500;
+    text-transform: capitalize;
+}
+
+body.theme-glass-gradient .status-dot {
+    border-color: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+}
+
+body.theme-glass-gradient .chat-text-area::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.02);
+}
+
+body.theme-glass-gradient .chat-text-area::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 3px;
+}
+
+body.theme-glass-gradient .chat-text-area::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+/* ── Theme: Final Fantasy VII (?theme=ff7) ────────────────────────────────── */
+body.theme-ff7 {
+    background: transparent !important;
+    font-family: 'Verdana', Geneva, sans-serif !important;
+}
+
+body.theme-ff7 .scroll-background {
+    display: none;
+}
+
+body.theme-ff7 .chat-text-area {
+    position: relative;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    max-width: none;
+    margin: 0;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    box-sizing: border-box;
+    
+    /* Perfect high-fidelity FF7 double border matching the game screenshots */
+    border: 3px solid #eff1ff;
+    border-radius: 8px;
+    box-shadow: 
+        /* The outer black outline */
+        0 0 0 3px #101210,
+        /* The inner black line separating gradient */
+        inset 0 0 0 3px #101210;
+    
+    background: #04009d;
+    background: linear-gradient(135deg, #04009d 0%, #00003c 100%);
+}
+
+body.theme-ff7 .chat-content {
+    font-family: 'Verdana', sans-serif !important;
+    color: #eff1ff !important;
+    text-shadow: 2px 2px #212421, 1px 1px #212021 !important;
+    font-size: clamp(14px, 1.8vw, 20px) !important;
+    font-weight: normal !important;
+}
+
+body.theme-ff7 .chat-content * {
+    color: #eff1ff !important;
+    text-shadow: 2px 2px #212421, 1px 1px #212021 !important;
+    font-family: 'Verdana', sans-serif !important;
+}
+
+body.theme-ff7 .chatMessage {
+    margin-bottom: 12px;
+}
+
+body.theme-ff7 .username {
+    font-weight: bold;
+}
+
+body.theme-ff7 .username.twitch {
+    color: #bb86fc !important;
+    text-shadow: 2px 2px #212421 !important;
+}
+
+body.theme-ff7 .username.youtube {
+    color: #ff6b6b !important;
+    text-shadow: 2px 2px #212421 !important;
+}
+
+body.theme-ff7 .username.tiktok {
+    color: #2dd4bf !important;
+    text-shadow: 2px 2px #212421 !important;
+}
+
+body.theme-ff7 .systemMessage {
+    color: #a78bfa !important;
+    font-style: italic;
+}
+
+body.theme-ff7 #status-container {
+    position: absolute;
+    top: 3px;
+    right: 3px;
+    margin: 0;
+    background: #04009d;
+    background: linear-gradient(135deg, #04009d 0%, #00003c 100%);
+    
+    /* Only border on left and bottom to connect with top-right chat borders */
+    border-top: none;
+    border-right: none;
+    border-left: 3px solid #eff1ff;
+    border-bottom: 3px solid #eff1ff;
+    border-radius: 0 0 0 8px; /* Round bottom-left corner only */
+    
+    /* Perfect matching shadows that connect with the main outline */
+    box-shadow: 
+        /* Outer black line on left/bottom */
+        -3px 3px 0 #101210,
+        /* Inner black line on left/bottom */
+        inset 3px -3px 0 #101210;
+}
+
+body.theme-ff7 .status-label {
+    color: #eff1ff;
+    font-family: 'Verdana', sans-serif !important;
+    text-shadow: 2px 2px #212421 !important;
+    text-transform: capitalize;
+}
+
+body.theme-ff7 .status-dot {
+    border-color: #e7dfe7;
+}
+
+body.theme-ff7 .chat-text-area::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.3);
+}
+
+body.theme-ff7 .chat-text-area::-webkit-scrollbar-thumb {
+    background: #eff1ff;
+    border: 1px solid #424542;
+    border-radius: 3px;
 }

@@ -18,9 +18,23 @@ function getUserColor(username) {
     return color;
 }
 
-// Check for transparent query parameter
+// Check for theme query parameter
 const urlParams = new URLSearchParams(window.location.search);
-if (urlParams.get('transparent') === 'true') {
+let theme = urlParams.get('theme');
+
+// Legacy compatibility: check for ?transparent=true
+if (!theme && urlParams.get('transparent') === 'true') {
+    theme = 'transparent';
+}
+
+if (!theme) {
+    theme = 'default';
+}
+
+// Add the selected theme class to the body
+document.body.classList.add(`theme-${theme}`);
+// For backward compatibility, also add 'transparent-mode' if transparent theme is selected
+if (theme === 'transparent') {
     document.body.classList.add('transparent-mode');
 }
 
@@ -94,9 +108,10 @@ function addLogMessage(message, className = "systemMessage") {
     });
 }
 
+const sbPort = parseInt(urlParams.get('sbPort')) || 8080;
 const client = new StreamerbotClient({
     host: "127.0.0.1",
-    port: 8080,
+    port: sbPort,
     endpoint: "/",
     onConnect: () => {
         const botStatus = document.getElementById('bot-status');

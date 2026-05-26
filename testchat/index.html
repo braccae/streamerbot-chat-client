@@ -347,8 +347,17 @@
             <span class="status-value"><span class="dot off" id="tkDot"></span> <span id="tkCount">0</span> clients</span>
         </div>
 
-        <a class="chat-link" href="/index.html?local=true" target="_blank">🖥️ Open Chat Frontend (local mode)</a>
-        <a class="chat-link" href="/index.html?local=true&transparent=true" target="_blank" style="margin-top:6px;">🪟 Open Transparent Mode</a>
+        <div style="margin-top:20px; border-top: 1px solid var(--border); padding-top: 16px;">
+            <label for="themeSelect">Select Theme & Open</label>
+            <select id="themeSelect" style="margin-bottom:10px; background: var(--bg); color: var(--text); border: 1px solid var(--border); border-radius: 8px; padding: 10px; width: 100%;">
+                <option value="default">📜 Pixel Art Scroll (Default)</option>
+                <option value="transparent">🪟 Transparent Overlay</option>
+                <option value="dark-terminal">📟 Cyber Terminal</option>
+                <option value="glass-gradient">💎 Glass Gradient</option>
+                <option value="ff7">⚔️ Final Fantasy VII</option>
+            </select>
+            <button class="btn btn-primary" id="openChatBtn">🖥️ Open Chat Frontend</button>
+        </div>
 
         <!-- <div style="margin-top:20px;">
             <h2>🎁 Send TikTok Gift</h2>
@@ -570,6 +579,13 @@
     // ── Gift Button ──────────────────────────────────────────────────────────
     $('sendGiftBtn').addEventListener('click', () => {
         sendGift($('giftUser').value, $('giftName').value, $('giftCount').value);
+    });
+
+    // ── Theme Selector Open Button ───────────────────────────────────────────
+    $('openChatBtn').addEventListener('click', () => {
+        const theme = $('themeSelect').value;
+        const url = `/index.html?local=true&theme=${theme}&sbPort=18080`;
+        window.open(url, '_blank');
     });
 </script>
 

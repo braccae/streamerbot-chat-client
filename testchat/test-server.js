@@ -4,7 +4,7 @@ const fs = require('fs');
 const path = require('path');
 
 // ── Ports ────────────────────────────────────────────────────────────────────
-const STREAMERBOT_PORT = 8080;
+const STREAMERBOT_PORT = 18080;
 const TIKTOK_PORT      = 8081;
 const HTTP_PORT        = 8082;
 
