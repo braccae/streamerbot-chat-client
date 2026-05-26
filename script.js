@@ -181,7 +181,18 @@ async function connectTikTokRelay() {
         const data = JSON.parse(event.data);
         const tiktokStatus = document.getElementById('tiktok-status');
 
-        if (data.type === 'info') {
+        if (data.type === 'tiktok-status') {
+            console.log("TikTok Status:", data.message);
+            if (tiktokStatus) {
+                if (data.connected) {
+                    tiktokStatus.classList.remove('disconnected');
+                    tiktokStatus.classList.add('connected');
+                } else {
+                    tiktokStatus.classList.remove('connected');
+                    tiktokStatus.classList.add('disconnected');
+                }
+            }
+        } else if (data.type === 'info') {
             console.log("Relay Info:", data.message);
             if (data.message.includes('Connected to TikTok LIVE') || data.message.includes('Already connected to TikTok LIVE')) {
                 if (tiktokStatus) {
