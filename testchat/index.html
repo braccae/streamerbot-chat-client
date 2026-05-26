@@ -577,9 +577,12 @@
     });
 
     // ── Gift Button ──────────────────────────────────────────────────────────
-    $('sendGiftBtn').addEventListener('click', () => {
-        sendGift($('giftUser').value, $('giftName').value, $('giftCount').value);
-    });
+    const sendGiftBtn = $('sendGiftBtn');
+    if (sendGiftBtn) {
+        sendGiftBtn.addEventListener('click', () => {
+            sendGift($('giftUser').value, $('giftName').value, $('giftCount').value);
+        });
+    }
 
     // ── Theme Selector Open Button ───────────────────────────────────────────
     const themeSelect = $('themeSelect');
