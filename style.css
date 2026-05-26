@@ -598,7 +598,7 @@ body.theme-ff7 .chat-content {
     font-family: 'Verdana', sans-serif !important;
     color: #eff1ff !important;
     text-shadow: 2px 2px #212421, 1px 1px #212021 !important;
-    font-size: clamp(14px, 1.8vw, 20px) !important;
+    font-size: clamp(18px, max(3.8vw, 6.8vh), 64px) !important;
     font-weight: normal !important;
 }
 
@@ -609,7 +609,8 @@ body.theme-ff7 .chat-content * {
 }
 
 body.theme-ff7 .chatMessage {
-    margin-bottom: 12px;
+    margin-bottom: 0.6em;
+    line-height: 1.4;
 }
 
 body.theme-ff7 .username {
@@ -666,8 +667,15 @@ body.theme-ff7 .status-label {
     text-transform: capitalize;
 }
 
+body.theme-ff7 .status-indicator {
+    font-size: clamp(11px, max(1.5vw, 4vh), 18px) !important;
+    gap: clamp(4px, 1vh, 10px) !important;
+}
+
 body.theme-ff7 .status-dot {
-    border-color: #e7dfe7;
+    width: clamp(8px, 1.5vh, 12px) !important;
+    height: clamp(8px, 1.5vh, 12px) !important;
+    border: 2px solid #eff1ff !important;
 }
 
 body.theme-ff7 .chat-text-area::-webkit-scrollbar-track {
