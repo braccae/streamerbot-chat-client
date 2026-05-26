@@ -8,7 +8,7 @@ const STREAMERBOT_PORT = 18080;
 const TIKTOK_PORT      = 8081;
 const HTTP_PORT        = 8082;
 
-// ── Streamerbot Emulation (port 8080) ────────────────────────────────────────
+// ── Streamerbot Emulation (port 18080) ────────────────────────────────────────
 const sbWss = new WebSocketServer({ port: STREAMERBOT_PORT });
 let sbSubscriptions = new Map(); // ws → Set of event names
 

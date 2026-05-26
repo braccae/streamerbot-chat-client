@@ -294,7 +294,7 @@
 
 <div class="header">
     <h1>🧪 Test Chat Server</h1>
-    <p>Send fake chat messages to the frontend • <a href="/index.html?local=true" style="color: var(--accent);">Open Chat Frontend</a></p>
+    <p>Send fake chat messages to the frontend • <a href="/index.html?local=true&sbPort=18080" style="color: var(--accent);">Open Chat Frontend</a></p>
 </div>
 
 <div class="grid">
@@ -339,7 +339,7 @@
         <h2>📡 Status & Gifts</h2>
 
         <div class="status-row">
-            <span class="status-label">Streamerbot WS (8080)</span>
+            <span class="status-label">Streamerbot WS (18080)</span>
             <span class="status-value"><span class="dot off" id="sbDot"></span> <span id="sbCount">0</span> clients</span>
         </div>
         <div class="status-row">
@@ -356,7 +356,7 @@
                 <option value="glass-gradient">💎 Glass Gradient</option>
                 <option value="ff7">⚔️ Final Fantasy VII</option>
             </select>
-            <button class="btn btn-primary" id="openChatBtn">🖥️ Open Chat Frontend</button>
+            <a class="btn btn-primary" id="openChatBtn" target="_blank" href="/index.html?local=true&theme=default&sbPort=18080" style="text-decoration: none;">🖥️ Open Chat Frontend</a>
         </div>
 
         <!-- <div style="margin-top:20px;">
@@ -582,11 +582,16 @@
     });
 
     // ── Theme Selector Open Button ───────────────────────────────────────────
-    $('openChatBtn').addEventListener('click', () => {
-        const theme = $('themeSelect').value;
-        const url = `/index.html?local=true&theme=${theme}&sbPort=18080`;
-        window.open(url, '_blank');
-    });
+    const themeSelect = $('themeSelect');
+    const openChatBtn = $('openChatBtn');
+
+    function updateOpenChatBtnUrl() {
+        const theme = themeSelect.value;
+        openChatBtn.href = `/index.html?local=true&theme=${theme}&sbPort=18080`;
+    }
+
+    themeSelect.addEventListener('change', updateOpenChatBtnUrl);
+    updateOpenChatBtnUrl();
 </script>
 
 </body>

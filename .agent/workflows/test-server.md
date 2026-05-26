@@ -4,7 +4,7 @@ description: Start the local test chat server and open the frontend + dashboard 
 
 # Start Local Test Chat Server
 
-The test chat server emulates both the Streamerbot WebSocket backend (port 8080) and the TikTok relay backend (port 8081), plus serves the frontend and dashboard via HTTP (port 8082).
+The test chat server emulates both the Streamerbot WebSocket backend (port 18080) and the TikTok relay backend (port 8081), plus serves the frontend and dashboard via HTTP (port 8082).
 
 ## Steps
 
@@ -12,7 +12,7 @@ The test chat server emulates both the Streamerbot WebSocket backend (port 8080)
 
 1. Kill any existing processes on the required ports to avoid conflicts:
 ```bash
-lsof -ti:8080,8081,8082 | xargs kill -9 2>/dev/null; echo "Ports cleared"
+lsof -ti:18080,8081,8082 | xargs kill -9 2>/dev/null; echo "Ports cleared"
 ```
 
 2. Start the test server in the background using `run_command` with `WaitMsBeforeAsync: 2000`. The command is:
