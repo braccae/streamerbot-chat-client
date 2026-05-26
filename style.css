@@ -444,8 +444,10 @@ body.theme-glass-gradient .chat-text-area {
     width: 90vw;
     height: 85vh;
     padding: 24px;
-    background: linear-gradient(125deg, rgba(19, 10, 42, 0.5), rgba(26, 15, 60, 0.5), rgba(13, 6, 20, 0.5), rgba(8, 3, 29, 0.5)) !important;
-    background-size: 400% 400% !important;
+    background: 
+        linear-gradient(135deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.05)),
+        linear-gradient(125deg, rgba(19, 10, 42, 0.5), rgba(26, 15, 60, 0.5), rgba(13, 6, 20, 0.5), rgba(8, 3, 29, 0.5)) !important;
+    background-size: auto, 400% 400% !important;
     animation: gradientShift 15s ease infinite !important;
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
@@ -519,8 +521,10 @@ body.theme-glass-gradient #status-container {
     position: fixed;
     top: 15px;
     right: 15px;
-    background: linear-gradient(125deg, rgba(19, 10, 42, 0.5), rgba(26, 15, 60, 0.5), rgba(13, 6, 20, 0.5), rgba(8, 3, 29, 0.5)) !important;
-    background-size: 400% 400% !important;
+    background: 
+        linear-gradient(135deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.05)),
+        linear-gradient(125deg, rgba(19, 10, 42, 0.5), rgba(26, 15, 60, 0.5), rgba(13, 6, 20, 0.5), rgba(8, 3, 29, 0.5)) !important;
+    background-size: auto, 400% 400% !important;
     animation: gradientShift 15s ease infinite !important;
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
