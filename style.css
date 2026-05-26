@@ -105,11 +105,8 @@ h1 {
     text-shadow: 1px 1px 0 #fff;
     /* A subtle text shadow for pixel font clarity */
     line-height: 1.4;
-    /* Make font size responsive, but guarantee a minimum readable size */
-    font-size: clamp(12px,
-            max(1.8vw, 2vh),
-            24px);
-    /* Responsive font size that scales with container */
+    /* Make font size static so it is legible at any scale */
+    font-size: 16px;
     margin: 0;
     /* Important: remove any default outer margins on this wrapper */
     word-break: break-word;
@@ -188,7 +185,6 @@ h1 {
     }
 
     .chat-content {
-        font-size: clamp(10px, max(2.2vw, 2.5vh), 20px);
         line-height: 1.3;
     }
 }
@@ -199,7 +195,6 @@ h1 {
     }
 
     .chat-content {
-        font-size: clamp(8px, max(2.4vw, 2.8vh), 18px);
         line-height: 1.2;
     }
 
@@ -212,11 +207,7 @@ h1 {
     }
 }
 
-@media (orientation: landscape) and (max-height: 600px) {
-    .chat-content {
-        font-size: clamp(10px, max(2vw, 2.5vh), 16px);
-    }
-}
+/* Media query font-size scaling removed for legibility at small scale */
 
 /* Transparent Theme Selectors (Supports both legacy ?transparent=true and new ?theme=transparent) */
 body.transparent-mode, body.theme-transparent {
@@ -241,7 +232,6 @@ body.transparent-mode .chat-text-area, body.theme-transparent .chat-text-area {
     /* Align text to the bottom */
     display: flex;
     flex-direction: column;
-    justify-content: flex-end;
 }
 
 body.transparent-mode .chat-content, body.theme-transparent .chat-content {
@@ -249,6 +239,7 @@ body.transparent-mode .chat-content, body.theme-transparent .chat-content {
     text-shadow: 2px 2px 0 #000, -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000;
     color: white;
     /* Ensure text is visible if background is dark */
+    margin-top: auto;
 }
 
 /* Status Indicators */
@@ -275,7 +266,7 @@ body.transparent-mode .chat-content, body.theme-transparent .chat-content {
     align-items: center;
     justify-content: flex-end;
     gap: clamp(2px, 1vmin, 10px);
-    font-size: clamp(3px, 1.2vmin, 14px);
+    font-size: 11px;
 }
 
 .status-label {
@@ -285,11 +276,11 @@ body.transparent-mode .chat-content, body.theme-transparent .chat-content {
 
 /* Pixel art square "dot" */
 .status-dot {
-    width: clamp(2px, 0.8vmin, 10px);
-    height: clamp(2px, 0.8vmin, 10px);
+    width: 8px;
+    height: 8px;
     display: inline-block;
-    border: clamp(1px, 0.15vmin, 2px) solid var(--shadow-dark);
-    border-radius: clamp(0px, 0.2vmin, 3px);
+    border: 1px solid var(--shadow-dark);
+    border-radius: 2px;
 }
 
 .status-dot.connected {
@@ -324,21 +315,21 @@ body.transparent-mode .status-dot, body.theme-transparent .status-dot {
 
 /* ── Theme: Cyber Terminal (?theme=dark-terminal) ─────────────────────────── */
 body.theme-dark-terminal {
-    background-color: #08080c !important;
-    background-image: radial-gradient(circle at center, #141226 0%, #08080c 100%) !important;
+    background: transparent !important;
     font-family: 'Courier New', Courier, monospace !important;
 }
 
 /* CRT Scanlines Overlay */
-body.theme-dark-terminal::after {
+body.theme-dark-terminal .chat-text-area::after {
     content: " ";
     display: block;
-    position: fixed;
+    position: absolute;
     top: 0; left: 0; bottom: 0; right: 0;
     background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
     z-index: 9999;
     background-size: 100% 4px, 6px 100%;
     pointer-events: none;
+    border-radius: 4px;
 }
 
 body.theme-dark-terminal .scroll-background {
@@ -357,16 +348,18 @@ body.theme-dark-terminal .chat-text-area {
     box-shadow: 0 0 15px rgba(57, 255, 20, 0.2), inset 0 0 15px rgba(57, 255, 20, 0.1);
     border-radius: 4px;
     margin-top: 5vh;
+    margin-left: auto;
+    margin-right: auto;
     display: flex;
     flex-direction: column;
-    justify-content: flex-end;
 }
 
 body.theme-dark-terminal .chat-content {
     font-family: 'Courier New', Courier, monospace !important;
     color: #39ff14 !important;
     text-shadow: 0 0 4px rgba(57, 255, 20, 0.6) !important;
-    font-size: clamp(14px, 1.8vw, 20px) !important;
+    font-size: 16px !important;
+    margin-top: auto;
 }
 
 body.theme-dark-terminal .chatMessage {
@@ -430,9 +423,7 @@ body.theme-dark-terminal .chat-text-area::-webkit-scrollbar-thumb:hover {
 
 /* ── Theme: Glass Gradient (?theme=glass-gradient) ─────────────────────── */
 body.theme-glass-gradient {
-    background: linear-gradient(125deg, #130a2a, #1a0f3c, #0d0614, #08031d) !important;
-    background-size: 400% 400% !important;
-    animation: gradientShift 15s ease infinite !important;
+    background: transparent !important;
     font-family: 'Outfit', 'Inter', sans-serif !important;
 }
 
@@ -453,16 +444,19 @@ body.theme-glass-gradient .chat-text-area {
     width: 90vw;
     height: 85vh;
     padding: 24px;
-    background: rgba(255, 255, 255, 0.03);
+    background: linear-gradient(125deg, rgba(19, 10, 42, 0.5), rgba(26, 15, 60, 0.5), rgba(13, 6, 20, 0.5), rgba(8, 3, 29, 0.5)) !important;
+    background-size: 400% 400% !important;
+    animation: gradientShift 15s ease infinite !important;
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 24px;
     box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1);
     margin-top: 5vh;
+    margin-left: auto;
+    margin-right: auto;
     display: flex;
     flex-direction: column;
-    justify-content: flex-end;
     transition: all 0.3s ease;
 }
 
@@ -470,7 +464,8 @@ body.theme-glass-gradient .chat-content {
     font-family: 'Outfit', 'Inter', sans-serif !important;
     color: #f1f1f6 !important;
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.15) !important;
-    font-size: clamp(14px, 1.8vw, 20px) !important;
+    font-size: 16px !important;
+    margin-top: auto;
 }
 
 body.theme-glass-gradient .chatMessage {
@@ -524,7 +519,9 @@ body.theme-glass-gradient #status-container {
     position: fixed;
     top: 15px;
     right: 15px;
-    background: rgba(255, 255, 255, 0.05);
+    background: linear-gradient(125deg, rgba(19, 10, 42, 0.5), rgba(26, 15, 60, 0.5), rgba(13, 6, 20, 0.5), rgba(8, 3, 29, 0.5)) !important;
+    background-size: 400% 400% !important;
+    animation: gradientShift 15s ease infinite !important;
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 255, 255, 0.1);
@@ -578,7 +575,6 @@ body.theme-ff7 .chat-text-area {
     padding: 24px;
     display: flex;
     flex-direction: column;
-    justify-content: flex-end;
     box-sizing: border-box;
     
     /* Perfect high-fidelity FF7 double border matching the game screenshots */
@@ -598,8 +594,9 @@ body.theme-ff7 .chat-content {
     font-family: 'Verdana', sans-serif !important;
     color: #eff1ff !important;
     text-shadow: 2px 2px #212421, 1px 1px #212021 !important;
-    font-size: clamp(18px, max(3.8vw, 6.8vh), 64px) !important;
+    font-size: 24px !important;
     font-weight: normal !important;
+    margin-top: auto;
 }
 
 body.theme-ff7 .chat-content * {
@@ -668,13 +665,13 @@ body.theme-ff7 .status-label {
 }
 
 body.theme-ff7 .status-indicator {
-    font-size: clamp(11px, max(1.5vw, 4vh), 18px) !important;
-    gap: clamp(4px, 1vh, 10px) !important;
+    font-size: 14px !important;
+    gap: 6px !important;
 }
 
 body.theme-ff7 .status-dot {
-    width: clamp(8px, 1.5vh, 12px) !important;
-    height: clamp(8px, 1.5vh, 12px) !important;
+    width: 10px !important;
+    height: 10px !important;
     border: 2px solid #eff1ff !important;
 }
 
