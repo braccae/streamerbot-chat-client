@@ -63,39 +63,52 @@ if (isLocalMode) {
 })();
 
 // Upside-down April Fools effect using CSS rotation to preserve pixel fonts
-function flipText(str) {
-    return str
-        .split(/(\s+)/)
-        .reverse()
-        .map(part => {
-            if (/^\s*$/.test(part)) return part; // Keep whitespace as-is for native wrapping
-            return `<span style="display:inline-block; transform:rotate(180deg);">${part}</span>`;
-        })
-        .join('');
+function renderFlipText(str) {
+    const fragment = document.createDocumentFragment();
+    const parts = str.split(/(\s+)/).reverse();
+    for (const part of parts) {
+        if (/^\s*$/.test(part)) {
+            fragment.appendChild(document.createTextNode(part));
+        } else {
+            const span = document.createElement("span");
+            span.style.display = "inline-block";
+            span.style.transform = "rotate(180deg)";
+            span.textContent = part;
+            fragment.appendChild(span);
+        }
+    }
+    return fragment;
 }
 
 /**
- * Applies any active holiday effect to a chat message string.
- * Returns the (possibly transformed) string.
+ * Applies any active holiday effect to a chat message string and returns a DocumentFragment or Node.
  */
-function applyHolidayEffects(text) {
-    if (!window.HOLIDAY) return text;
+function renderHolidayMessage(text) {
+    const fragment = document.createDocumentFragment();
+    if (!window.HOLIDAY) {
+        fragment.appendChild(document.createTextNode(text));
+        return fragment;
+    }
     const H = window.HOLIDAY;
 
-    if (H.aprilFools) return flipText(text);
-    if (H.valentines) return `❤️ ${text} ❤️`;
-    if (H.halloween) return `🎃 ${text} 👻`;
-    if (H.christmas) return `🎄 ${text} 🎁`;
-    if (H.stPatricks) return `🍀 ${text} 🍀`;
-    if (H.newYears) return `🎆 ${text} 🥂`;
+    if (H.aprilFools) return renderFlipText(text);
 
-    return text;
+    let prefix = "";
+    let suffix = "";
+    if (H.valentines) { prefix = "❤️ "; suffix = " ❤️"; }
+    else if (H.halloween) { prefix = "🎃 "; suffix = " 👻"; }
+    else if (H.christmas) { prefix = "🎄 "; suffix = " 🎁"; }
+    else if (H.stPatricks) { prefix = "🍀 "; suffix = " 🍀"; }
+    else if (H.newYears) { prefix = "🎆 "; suffix = " 🥂"; }
+
+    fragment.appendChild(document.createTextNode(prefix + text + suffix));
+    return fragment;
 }
 
 function addLogMessage(message, className = "systemMessage") {
     const messageElement = document.createElement("div");
     messageElement.classList.add(...className.split(" "));
-    messageElement.innerHTML = message;
+    messageElement.textContent = message;
     chatLog.appendChild(messageElement);
 
     // Smooth scroll to the bottom of the chat text area
@@ -208,9 +221,20 @@ async function connectTikTokRelay() {
         } else if (data.type === 'tiktok-chat') {
             const messageElement = document.createElement("div");
             messageElement.classList.add("chatMessage");
-            const tiktokColor = getUserColor(data.user.name);
-            const tiktokMsg = applyHolidayEffects(data.message);
-            messageElement.innerHTML = `<span class="username tiktok">[TikTok]</span> <span style="color:${tiktokColor}">${data.user.name}:</span> ${tiktokMsg}`;
+            
+            const platformSpan = document.createElement("span");
+            platformSpan.classList.add("username", "tiktok");
+            platformSpan.textContent = "[TikTok]";
+            
+            const userSpan = document.createElement("span");
+            userSpan.style.color = getUserColor(data.user.name);
+            userSpan.textContent = ` ${data.user.name}:`;
+            
+            messageElement.appendChild(platformSpan);
+            messageElement.appendChild(userSpan);
+            messageElement.appendChild(document.createTextNode(" "));
+            messageElement.appendChild(renderHolidayMessage(data.message));
+            
             chatLog.appendChild(messageElement);
 
             scrollToBottom();
@@ -277,9 +301,20 @@ client.on("Twitch.ChatMessage", (data) => {
 
     const messageElement = document.createElement("div");
     messageElement.classList.add("chatMessage");
-    const twitchColor = getUserColor(userName);
-    const twitchMsg = applyHolidayEffects(chatMessage);
-    messageElement.innerHTML = `<span class="username twitch">[Twitch]</span> <span style="color:${twitchColor}">${userName}:</span> ${twitchMsg}`;
+    
+    const platformSpan = document.createElement("span");
+    platformSpan.classList.add("username", "twitch");
+    platformSpan.textContent = "[Twitch]";
+    
+    const userSpan = document.createElement("span");
+    userSpan.style.color = getUserColor(userName);
+    userSpan.textContent = ` ${userName}:`;
+    
+    messageElement.appendChild(platformSpan);
+    messageElement.appendChild(userSpan);
+    messageElement.appendChild(document.createTextNode(" "));
+    messageElement.appendChild(renderHolidayMessage(chatMessage));
+    
     chatLog.appendChild(messageElement);
 
     // Smooth scroll to the bottom of the chat text area
@@ -303,9 +338,20 @@ client.on("YouTube.Message", (data) => {
 
     const messageElement = document.createElement("div");
     messageElement.classList.add("chatMessage");
-    const youtubeColor = getUserColor(userName);
-    const youtubeMsg = applyHolidayEffects(chatMessage);
-    messageElement.innerHTML = `<span class="username youtube">[YouTube]</span> <span style="color:${youtubeColor}">${userName}:</span> ${youtubeMsg}`;
+    
+    const platformSpan = document.createElement("span");
+    platformSpan.classList.add("username", "youtube");
+    platformSpan.textContent = "[YouTube]";
+    
+    const userSpan = document.createElement("span");
+    userSpan.style.color = getUserColor(userName);
+    userSpan.textContent = ` ${userName}:`;
+    
+    messageElement.appendChild(platformSpan);
+    messageElement.appendChild(userSpan);
+    messageElement.appendChild(document.createTextNode(" "));
+    messageElement.appendChild(renderHolidayMessage(chatMessage));
+    
     chatLog.appendChild(messageElement);
 
     // Smooth scroll to the bottom of the chat text area
@@ -377,12 +423,26 @@ if (window.HOLIDAY && window.HOLIDAY.friday13) {
     ];
 
     function sendGhostMessage() {
-        const user = GHOST_USERS[Math.floor(Math.random() * GHOST_USERS.length)];
-        const msg = GHOST_MESSAGES[Math.floor(Math.random() * GHOST_MESSAGES.length)];
-        addLogMessage(
-            `<span class="username" style="color:#cc2222">${user}:</span> <em>${msg}</em>`,
-            'chatMessage'
-        );
+        const user = GHOST_USERS.at(Math.floor(Math.random() * GHOST_USERS.length));
+        const msg = GHOST_MESSAGES.at(Math.floor(Math.random() * GHOST_MESSAGES.length));
+        
+        const messageElement = document.createElement("div");
+        messageElement.classList.add("chatMessage");
+        
+        const userSpan = document.createElement("span");
+        userSpan.classList.add("username");
+        userSpan.style.color = "#cc2222";
+        userSpan.textContent = `${user}: `;
+        
+        const msgEm = document.createElement("em");
+        msgEm.textContent = msg;
+        
+        messageElement.appendChild(userSpan);
+        messageElement.appendChild(msgEm);
+        
+        chatLog.appendChild(messageElement);
+        scrollToBottom();
+        
         // Schedule next ghost between 45 and 150 seconds from now
         const nextIn = (300 + Math.floor(Math.random() * 106)) * 1000;
         setTimeout(sendGhostMessage, nextIn);

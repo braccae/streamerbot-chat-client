@@ -215,21 +215,38 @@ const httpServer = http.createServer((req, res) => {
     }
 
     // ── Static File Serving ──────────────────────────────────────────────
-    let filePath;
-    if (req.url === '/' || req.url === '/testchat' || req.url === '/testchat/') {
-        filePath = path.join(__dirname, 'index.html');
-    } else if (req.url.startsWith('/testchat/')) {
-        filePath = path.join(__dirname, req.url.replace('/testchat/', ''));
-    } else {
-        // Serve project root files (index.html, script.js, style.css, etc.)
-        const cleanUrl = req.url.split('?')[0];
-        filePath = path.join(PROJECT_ROOT, cleanUrl);
+    let decodedUrl;
+    try {
+        decodedUrl = decodeURIComponent(req.url.split('?')[0]);
+    } catch (e) {
+        res.writeHead(400, { 'Content-Type': 'text/plain' });
+        res.end('Bad Request');
+        return;
     }
 
-    const ext = path.extname(filePath);
+    let filePath;
+    if (decodedUrl === '/' || decodedUrl === '/testchat' || decodedUrl === '/testchat/') {
+        filePath = path.join(__dirname, 'index.html');
+    } else if (decodedUrl.startsWith('/testchat/')) {
+        filePath = path.join(__dirname, decodedUrl.replace('/testchat/', ''));
+    } else {
+        // Serve project root files (index.html, script.js, style.css, etc.)
+        filePath = path.join(PROJECT_ROOT, decodedUrl);
+    }
+
+    const resolvedPath = path.resolve(filePath);
+
+    // Verify the resolved path starts with the project root to prevent path traversal
+    if (!resolvedPath.startsWith(PROJECT_ROOT)) {
+        res.writeHead(403, { 'Content-Type': 'text/plain' });
+        res.end('Forbidden');
+        return;
+    }
+
+    const ext = path.extname(resolvedPath);
     const contentType = MIME_TYPES[ext] || 'application/octet-stream';
 
-    fs.readFile(filePath, (err, data) => {
+    fs.readFile(resolvedPath, (err, data) => {
         if (err) {
             res.writeHead(404, { 'Content-Type': 'text/plain' });
             res.end('Not Found');
