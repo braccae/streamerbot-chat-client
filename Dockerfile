@@ -1,5 +1,5 @@
 # Builder stage
-FROM node:20-slim AS builder
+FROM node:26-slim AS builder
 
 WORKDIR /app
 
@@ -12,7 +12,7 @@ RUN apt-get update && apt-get install -y python3 make g++ \
     && npm install --omit=dev
 
 # Final stage
-FROM node:20-slim
+FROM node:26-slim
 
 # Set working directory
 WORKDIR /app
