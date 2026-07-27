@@ -5,7 +5,7 @@
     "pages:dev": "wrangler pages dev ."
   },
   "dependencies": {
-    "@streamerbot/client": "^1.11.0",
+    "@streamerbot/client": "^2.0.1",
     "tiktok-live-connector": "^2.1.1-beta1",
     "ws": "^8.19.0"
   },
